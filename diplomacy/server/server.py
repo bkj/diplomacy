@@ -83,7 +83,7 @@ from diplomacy.server.scheduler import Scheduler
 from diplomacy.server.server_game import ServerGame
 from diplomacy.server.users import Users
 from diplomacy.engine.map import Map
-from diplomacy.utils import common, exceptions, strings, constants
+from diplomacy.utils import common, exceptions, strings, constants, convoy_paths
 
 LOGGER = logging.getLogger(__name__)
 
@@ -233,7 +233,7 @@ class Server:
             raise exceptions.ServerDirException(server_dir)
         self.data_path = os.path.join(server_dir, 'data')
         self.games_path = os.path.join(self.data_path, 'games')
-
+        convoy_paths.set_server_dir(server_dir)
         # DAIDE port range
         self.daide_min_port = daide_min_port
         self.daide_max_port = daide_max_port
