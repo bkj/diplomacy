@@ -44,6 +44,13 @@ CACHE_FILE_NAME = 'convoy_paths_cache.pkl'
 INTERNAL_CACHE_PATH = os.path.join(settings.PACKAGE_DIR, 'maps', CACHE_FILE_NAME)
 EXTERNAL_CACHE_PATH = os.path.join(HOME_DIRECTORY, '.cache', 'diplomacy', CACHE_FILE_NAME)
 
+def set_server_dir(server_dir):
+    global INTERNAL_CACHE_PATH
+    global EXTERNAL_CACHE_PATH
+    INTERNAL_CACHE_PATH = os.path.join(server_dir, 'maps', CACHE_FILE_NAME)
+    EXTERNAL_CACHE_PATH=INTERNAL_CACHE_PATH
+    print(INTERNAL_CACHE_PATH)
+
 def _display_progress_bar(queue, max_loop_iters):
     """ Displays a progress bar
 
