@@ -22,3 +22,4 @@ import os
 DIPLOMACY_ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = DIPLOMACY_ROOT_DIR
 TIME_ZONE = 'America/Montreal'
+PERMISSIVE_CLIENT_ORIGIN = True

@@ -23,6 +23,7 @@ from tornado.websocket import WebSocketHandler, WebSocketClosedError
 
 import ujson as json
 
+import diplomacy.settings
 from diplomacy.communication import responses, requests
 from diplomacy.server import request_managers
 from diplomacy.utils import exceptions, strings
@@ -74,7 +75,13 @@ class ConnectionHandler(WebSocketHandler):
 
         # Split host with ':' and keep only first piece to ignore eventual port.
         host = self.request.headers.get("Host").split(':')[0]
-        return origin == host
+        
+        # Allow connections from self-hosted webui clients
+        if diplomacy.settings.PERMISSIVE_CLIENT_ORIGIN:
+            hosts = (host, 'localhost', '0.0.0.0', '127.0.0.1')
+        else:
+            hosts = (host)
+        return origin in hosts
 
     def on_close(self):
         """ Invoked when the socket is closed (see parent method).
