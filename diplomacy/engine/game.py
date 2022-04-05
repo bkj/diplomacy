@@ -1454,12 +1454,16 @@ class Game(Jsonable):
         self.state_history.put(previous_phase, previous_state)
 
         # Set empty orders for unorderable powers.
-        if not self.is_game_done:
-            orderable_locations = self.get_orderable_locations()
-            for power_name, power_orderable_locs in orderable_locations.items():
-                if not power_orderable_locs and not self.get_power(power_name).is_eliminated():
-                    self.set_orders(power_name, [])
-                    self.set_wait(power_name, False)
+	# JAD: commenting the following if statement. This block will automatically set
+	# empty order (OrderSettings.ORDER_SET_EMPTY->1) if the power has no moves to make.
+	# This can result in the game being prematurely processed and progressing to next phase
+	# while there are still orders to be processed in the queue corresponding to the previous phase.
+        #if not self.is_game_done:
+        #    orderable_locations = self.get_orderable_locations()
+        #    for power_name, power_orderable_locs in orderable_locations.items():
+        #        if not power_orderable_locs and not self.get_power(power_name).is_eliminated():
+        #            self.set_orders(power_name, [])
+        #            self.set_wait(power_name, False)
 
         return GamePhaseData(name=str(previous_phase),
                              state=previous_state,
