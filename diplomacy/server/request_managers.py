@@ -109,7 +109,7 @@ def on_create_game(server, request, connection_handler):
 
     # Check request token.
     verify_request(server, request, connection_handler)
-    game_id, token, power_name, state = request.game_id, request.token, request.power_name, request.state
+    game_id, token, power_name, state, daide_port = request.game_id, request.token, request.power_name, request.state, request.daide_port
 
     # Check if server still accepts to create new games.
     if server.cannot_create_more_games():
@@ -157,7 +157,7 @@ def on_create_game(server, request, connection_handler):
         server_game.promote_moderator(username)
 
     # Register game on server.
-    server.add_new_game(server_game)
+    server.add_new_game(server_game, daide_port=daide_port)
 
     # Register game creator, as either power player or omniscient observer.
     if power_name:

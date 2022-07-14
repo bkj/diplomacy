@@ -665,7 +665,7 @@ class Server:
                 # This should be an internal server error.
                 raise exc
 
-    def add_new_game(self, server_game):
+    def add_new_game(self, server_game, daide_port=None):
         """ Add a new game data on server in memory and perform any addition processing.
             This does not save the game on disk.
 
@@ -674,7 +674,7 @@ class Server:
         # Register game on memory.
         self.games[server_game.game_id] = server_game
         # Start DAIDE server for this game.
-        self.start_new_daide_server(server_game.game_id)
+        self.start_new_daide_server(server_game.game_id, port=daide_port)
 
     def get_game(self, game_id):
         """ Return game saved on server matching given game ID.
