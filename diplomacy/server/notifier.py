@@ -330,7 +330,8 @@ class Notifier:
             :type server_game: diplomacy.server.server_game.ServerGame
         """
         if game_message.is_global():
-            yield self._notify_game(server_game, notifications.GameMessageReceived, message=game_message)
+            if not '#LOG' in game_message.message:
+                yield self._notify_game(server_game, notifications.GameMessageReceived, message=game_message)
         else:
             power_from = server_game.get_power(game_message.sender)
             power_to = server_game.get_power(game_message.recipient)
