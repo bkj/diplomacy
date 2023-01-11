@@ -686,6 +686,19 @@ class SendGameMessage(_AbstractGameRequest):
         self.message = None  # type: Message
         super(SendGameMessage, self).__init__(**kwargs)
 
+class SendLogData(_AbstractGameRequest):
+    """Data to log intent, rationalize decision, note observations about universe
+    """
+    __slots__ = ['record']
+    params = {
+        strings.RECORD: parsing.OptionalValueType(str)
+    }
+
+    def __init__(self, **kwargs):
+        self.record = None
+        print(kwargs['record'])
+        super(SendLogData, self).__init__(**kwargs)
+
 class SetDummyPowers(_AbstractGameRequest):
     """ Game request to set dummy powers. Require game master privileges.
         If given powers are controlled, related players are kicked

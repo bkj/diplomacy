@@ -109,6 +109,7 @@ class NetworkGame(Game):
     leave = _game_request_method(Channel._leave_game)
     send_game_message = _game_request_method(Channel._send_game_message)
     set_orders = _game_request_method(Channel._set_orders)
+    send_log_data = _game_request_method(Channel._send_log_data)
 
     clear_centers = _game_request_method(Channel._clear_centers)
     clear_orders = _game_request_method(Channel._clear_orders)
