@@ -84,6 +84,7 @@ import inspect
 import logging
 
 from diplomacy.engine.message import Message
+from diplomacy.engine.log import Log
 from diplomacy.utils import common, exceptions, parsing, strings
 from diplomacy.utils.network_data import NetworkData
 from diplomacy.utils.parsing import OptionalValueType
@@ -691,7 +692,7 @@ class SendLogData(_AbstractGameRequest):
     """
     __slots__ = ['log']
     params = {
-        strings.LOG: parsing.OptionalValueType(str)
+        strings.LOG: parsing.JsonableClassType(Log)
     }
 
     def __init__(self, **kwargs):

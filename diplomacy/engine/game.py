@@ -33,6 +33,7 @@ import diplomacy.utils.errors as err
 from diplomacy.utils.order_results import OK, NO_CONVOY, BOUNCE, VOID, CUT, DISLODGED, DISRUPTED, DISBAND, MAYBE
 from diplomacy.engine.map import Map
 from diplomacy.engine.message import Message, GLOBAL
+from diplomacy.engine.log import Log
 from diplomacy.engine.power import Power
 from diplomacy.engine.renderer import Renderer
 from diplomacy.utils import PriorityDict, common, exceptions, parsing, strings
@@ -816,6 +817,18 @@ class Game(Jsonable):
         for power_name, controller in powers_controllers.items():
             self.get_power(power_name).update_controller(controller, timestamps[power_name])
 
+    def new_log_data(self, body, recipient="OMNISCIENT"):
+        """ Create an undated (without timestamp) log message to be sent from a power to the server.
+            Server will answer with timestamp and added to local game logs.
+
+            :param recipient: recipient "OMNISCIENT".
+            :param body: message body (string).
+            :return: a new GameMessage object.
+            :rtype: GameMessage
+        """
+        assert self.is_player_game()
+        return Log(phase=self.current_short_phase, sender=self.role, recipient=recipient, message=body)
+
     def new_power_message(self, recipient, body):
         """ Create a undated (without timestamp) power message to be sent from a power to another via server.
             Server will answer with timestamp, and message will be updated
@@ -842,6 +855,31 @@ class Game(Jsonable):
         assert self.is_player_game()
         return Message(phase=self.current_short_phase, sender=self.role, recipient=GLOBAL, message=body)
 
+    def add_log(self, log):
+        """
+        Add log to current game data.
+        Only a server game can add a message with no timestamp.
+        Game will auto-generate a timestamp for the message.
+        :param log: a Log object to add
+        :return: log timestamp
+        :rtype: int
+        """
+
+        assert isinstance(log, Log)
+        if log.time_sent is None:
+            # This instance must be a server game.
+            # Message should be a new message matching current game phase.
+            # There should not be any more recent message in message history (as we are adding a new message).
+            # We must generate a timestamp for this message.
+            assert self.is_server_game()
+            if log.phase != self.current_short_phase:
+                raise exceptions.GamePhaseException(self.current_short_phase, log.phase)
+            assert not self.messages or common.timestamp_microseconds() >= self.messages.last_key()
+            time.sleep(1e-6)
+            log.time_sent = common.timestamp_microseconds()
+
+        #self.messages.put(message.time_sent, message)
+        return log.time_sent
     def add_message(self, message):
         """ Add message to current game data.
             Only a server game can add a message with no timestamp:
