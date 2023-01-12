@@ -689,13 +689,13 @@ class SendGameMessage(_AbstractGameRequest):
 class SendLogData(_AbstractGameRequest):
     """Data to log intent, rationalize decision, note observations about universe
     """
-    __slots__ = ['record']
+    __slots__ = ['log']
     params = {
-        strings.RECORD: parsing.OptionalValueType(str)
+        strings.LOG: parsing.OptionalValueType(str)
     }
 
     def __init__(self, **kwargs):
-        self.record = None
+        self.log = None
         super(SendLogData, self).__init__(**kwargs)
 
 class SetDummyPowers(_AbstractGameRequest):
