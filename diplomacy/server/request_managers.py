@@ -1029,9 +1029,9 @@ def on_send_log_data(server, request, connection_handler):
 
     if not level.game.is_game_active:
         raise exceptions.GameNotPlayingException()
-    power = level.game.get_power(level.power_name)
     log.time_sent = level.game.add_log(log)
-    print(level.game.current_short_phase +"\t"+level.power_name +"\t"+ power.name + "\t" + log.message)
+    server.save_game(level.game)
+
 
 def on_set_orders(server, request, connection_handler):
     """ Manage request SetOrders.

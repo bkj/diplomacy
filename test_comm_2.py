@@ -30,6 +30,9 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
         await game.send_log_data(log=game.new_log_data(body=msg))
         #await game.send_log_data(log= "["+current_phase+"] " + "TEST from " + power_name)
 
+        if current_phase == 'S1902M':
+            print("hey")
+
         # Submitting orders
         if game.get_orderable_locations(power_name):
             possible_orders = game.get_all_possible_orders()
