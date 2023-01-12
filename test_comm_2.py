@@ -26,7 +26,7 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
         current_phase = game.get_current_phase()
 
         #test new api method
-        game.send_log_data(record= "["+current_phase+"]" + "TEST from " + power_name)
+        await game.send_log_data(record= "["+current_phase+"] " + "TEST from " + power_name)
 
         # Submitting orders
         if game.get_orderable_locations(power_name):

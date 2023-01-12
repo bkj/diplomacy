@@ -696,7 +696,6 @@ class SendLogData(_AbstractGameRequest):
 
     def __init__(self, **kwargs):
         self.record = None
-        print(kwargs['record'])
         super(SendLogData, self).__init__(**kwargs)
 
 class SetDummyPowers(_AbstractGameRequest):

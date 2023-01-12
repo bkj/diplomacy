@@ -333,6 +333,7 @@ MAPPING = {
     requests.SaveGame: default_manager,
     requests.SendGameMessage: on_send_game_message,
     requests.SetDummyPowers: default_manager,
+    requests.SendLogData: default_manager,
     requests.SetGameState: on_set_game_state,
     requests.SetGameStatus: on_set_game_status,
     requests.SetGrade: default_manager,
