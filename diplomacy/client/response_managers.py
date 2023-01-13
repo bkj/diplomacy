@@ -211,6 +211,15 @@ def on_logout(context, response):
     """
     context.remove_channel()
 
+def on_send_log_data(context, response):
+    """Manage response for request SendLogData
+
+    """
+    request = context.request  # type: requests.SendLogData
+    log = request.log
+    log.time_sent = response.data
+    Game.add_log(context.game,log)
+
 def on_send_game_message(context, response):
     """ Manage response for request SendGameMessage.
 
@@ -333,7 +342,7 @@ MAPPING = {
     requests.SaveGame: default_manager,
     requests.SendGameMessage: on_send_game_message,
     requests.SetDummyPowers: default_manager,
-    requests.SendLogData: default_manager,
+    requests.SendLogData: on_send_log_data,
     requests.SetGameState: on_set_game_state,
     requests.SetGameStatus: on_set_game_status,
     requests.SetGrade: default_manager,

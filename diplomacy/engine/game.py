@@ -738,15 +738,18 @@ class Game(Jsonable):
         states = self.state_history.sub(from_phase, to_phase)
         orders = self.order_history.sub(from_phase, to_phase)
         messages = self.message_history.sub(from_phase, to_phase)
+        logs = self.log_history.sub(from_phase, to_phase)
         results = self.result_history.sub(from_phase, to_phase)
         if game_role:
             messages = [self.filter_messages(msg_dict, game_role) for msg_dict in messages]
-        assert len(phases) == len(states) == len(orders) == len(messages) == len(results), (
-            len(phases), len(states), len(orders), len(messages), len(results))
+            logs = [self.filter_logs(log_dict, game_role) for log_dict in logs]
+        assert len(phases) == len(states) == len(orders) == len(messages) == len(results) == len(logs), (
+            len(phases), len(states), len(orders), len(messages), len(results), len(logs))
         return [GamePhaseData(name=str(phases[i]),
                               state=states[i],
                               orders=orders[i],
                               messages=messages[i],
+                              logs=logs[i],
                               results=results[i])
                 for i in range(len(phases))]
 

@@ -19,6 +19,7 @@ import inspect
 
 from diplomacy.engine.game import Game
 from diplomacy.engine.message import Message
+from diplomacy.engine.log import Log
 from diplomacy.utils import common, exceptions, parsing, strings
 from diplomacy.utils.network_data import NetworkData
 from diplomacy.utils.constants import OrderSettings
@@ -233,6 +234,21 @@ class GameStatusUpdate(_GameNotification):
     def __init__(self, **kwargs):
         self.status = None
         super(GameStatusUpdate, self).__init__(**kwargs)
+
+class LogDataReceived(_GameNotification):
+    """ Notification about a game message received.
+        Properties:
+
+            - **log**: :class:`diplomacy.engine.log.Message` received.
+    """
+    __slots__ = ['log']
+    params = {
+        strings.LOG: parsing.JsonableClassType(Log)
+    }
+    def __init__(self, **kwargs):
+        self.log = None  # type: Message
+        super(LogDataReceived, self).__init__(**kwargs)
+
 
 class GameMessageReceived(_GameNotification):
     """ Notification about a game message received.
