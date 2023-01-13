@@ -635,6 +635,40 @@ class Game(Jsonable):
         if self.messages:
             timestamp = max(self.messages.last_key(), timestamp)
         return timestamp
+    @classmethod
+    def filter_logs(cls, logs, game_role, timestamp_from=None, timestamp_to=None):
+        """ Filter given logs based on given game role between given timestamps (bounds included).
+            See method diplomacy.utils.SortedDict.sub() about bound rules.
+
+            :param logs: a sorted dictionary of logs to filter.
+            :param game_role: game role requiring logs. Either a special power name
+                (PowerName.OBSERVER or PowerName.OMNISCIENT), a power name, or a list of power names.
+            :param timestamp_from: lower timestamp (included) for required logs.
+            :param timestamp_to: upper timestamp (included) for required logs.
+            :return: a dict of corresponding logs (empty if no corresponding logs found),
+                mapping logs timestamps to logs.
+            :type logs: diplomacy.utils.sorted_dict.SortedDict
+        """
+
+        # Observer can see global messages and system messages sent to observers.
+        if isinstance(game_role, str) and game_role == strings.OBSERVER_TYPE:
+            return {log.time_sent: log
+                    for log in logs.sub(timestamp_from, timestamp_to)
+                    if log.is_global() or log.for_observer()}
+
+        # Omniscient observer can see all messages.
+        if isinstance(game_role, str) and game_role == strings.OMNISCIENT_TYPE:
+            return {log.time_sent: log
+                    for log in logs.sub(timestamp_from, timestamp_to)}
+
+        # Power can see logs she sent
+        if isinstance(game_role, str):
+            game_role = [game_role]
+        elif not isinstance(game_role, list):
+            game_role = list(game_role)
+        return {log.time_sent: log
+                for log in logs.sub(timestamp_from, timestamp_to)
+                if log.sender in game_role}
 
     @classmethod
     def filter_messages(cls, messages, game_role, timestamp_from=None, timestamp_to=None):
@@ -738,10 +772,12 @@ class Game(Jsonable):
         phase = self._phase_wrapper_type(game_phase_data.name)
         assert phase not in self.state_history
         assert phase not in self.message_history
+        assert phase not in self.log_history
         assert phase not in self.order_history
         assert phase not in self.result_history
         self.state_history.put(phase, game_phase_data.state)
         self.message_history.put(phase, game_phase_data.messages)
+        self.log_history.put(phase, game_phase_data.logs)
         self.order_history.put(phase, game_phase_data.orders)
         self.result_history.put(phase, game_phase_data.results)
 
@@ -1518,6 +1554,7 @@ class Game(Jsonable):
                              state=previous_state,
                              orders=previous_orders,
                              messages=previous_messages,
+                             logs=previous_logs,
                              results=self.result_history[previous_phase])
 
     def build_caches(self):
@@ -1607,6 +1644,7 @@ class Game(Jsonable):
                              state=self.get_state(),
                              orders=current_orders,
                              messages=self.messages.copy(),
+                             logs=self.logs.copy(),
                              results={})
 
     def set_phase_data(self, phase_data, clear_history=True):
@@ -1645,6 +1683,7 @@ class Game(Jsonable):
             if power_orders is not None:
                 Game.set_orders(self, power_name, power_orders)
         self.messages = current_phase_data.messages.copy()
+        self.logs = current_phase_data.logs.copy()
         # We ignore 'results' for current phase data.
 
     def get_state(self):
@@ -4567,5 +4606,6 @@ class Game(Jsonable):
         self.order_history.clear()
         self.result_history.clear()
         self.message_history.clear()
+        self.log_history.clear()
         self.clear_orders()
         self.clear_vote()
