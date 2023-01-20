@@ -808,6 +808,7 @@ class Game(Jsonable):
         previous_phase = self._phase_wrapper_type(self.current_short_phase)
         previous_orders = self.get_orders()
         previous_messages = self.messages.copy()
+        previous_logs = self.logs.copy()
         previous_state = self.get_state()
 
         # Finish the game.
@@ -817,8 +818,10 @@ class Game(Jsonable):
         self.clear_vote()
         self.clear_orders()
         self.messages.clear()
+        self.logs.clear()
         self.order_history.put(previous_phase, previous_orders)
         self.message_history.put(previous_phase, previous_messages)
+        self.log_history.put(previous_phase, previous_logs)
         self.state_history.put(previous_phase, previous_state)
         self.result_history.put(previous_phase, {})
 
@@ -828,11 +831,13 @@ class Game(Jsonable):
                                             state=previous_state,
                                             orders=previous_orders,
                                             messages=previous_messages,
+                                            logs=previous_logs,
                                             results={})
         current_phase_data = GamePhaseData(name=self.current_short_phase,
                                            state=self.get_state(),
                                            orders={},
                                            messages={},
+                                           logs={},
                                            results={})
 
         return previous_phase_data, current_phase_data

@@ -58,6 +58,8 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
     # A local copy of the game can be saved with to_saved_game_format
     # To download a copy of the game with messages from all powers, you need to export the game as an admin
     # by logging in as 'admin' / 'password'
+    print(power_name + "----------------------------")
+    print(game.log_history)
 
 
 async def launch(game_id):
