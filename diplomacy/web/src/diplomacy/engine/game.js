@@ -56,7 +56,7 @@ export class Game {
 
         const nonNullFields = [
             'game_id', 'map_name', 'messages', 'role', 'rules', 'status', 'timestamp_created', 'deadline',
-            'message_history', 'order_history', 'state_history'
+            'message_history', 'order_history', 'state_history', 'logs', 'log_history'
         ];
         // These fields may be null.
         const nullFields = ['n_controls', 'registration_password'];
@@ -71,6 +71,7 @@ export class Game {
         this.game_id = gameData.game_id;
         this.map_name = gameData.map_name;
         this.messages = new SortedDict(gameData instanceof Game ? null : gameData.messages, parseInt);
+        this.logs = new SortedDict(gameData instanceof Game ? null : gameData.logs, parseInt);
 
         // {short phase name => state}
         this.state_history = new SortedDict(gameData instanceof Game ? gameData.state_history.toDict() : gameData.state_history, comparablePhase);
@@ -81,6 +82,7 @@ export class Game {
         // {short phase name => {message.time_sent => message}}
         if (gameData instanceof Game) {
             this.message_history = new SortedDict(gameData.message_history.toDict(), comparablePhase);
+            this.log_history = new SortedDict(gameData.log_history.toDict(), comparablePhase);
         } else {
             this.message_history = new SortedDict(null, comparablePhase);
             for (let entry of Object.entries(gameData.message_history)) {
@@ -88,6 +90,13 @@ export class Game {
                 const phaseMessages = entry[1];
                 const sortedPhaseMessages = new SortedDict(phaseMessages, parseInt);
                 this.message_history.put(shortPhaseName, sortedPhaseMessages);
+            }
+            this.log_history = new SortedDict(null, comparablePhase);
+            for (let entry of Object.entries(gameData.log_history)) {
+                const shortPhaseName = entry[0];
+                const phaseLogs = entry[1];
+                const sortedPhaseLogs = new SortedDict(phaseLogs, parseInt);
+                this.log_history.put(shortPhaseName, sortedPhaseLogs);
             }
         }
 
