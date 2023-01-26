@@ -328,6 +328,7 @@ export class Game {
                 this.setOrders(entry[0], entry[1]);
         }
         this.messages = phaseData.messages instanceof SortedDict ? phaseData.messages : new SortedDict(phaseData.messages, parseInt);
+        this.logs = phaseData.logs instanceof SortedDict ? phaseData.logs : new SortedDict(phaseData.logs, parseInt);
     }
 
     setState(state) {
@@ -407,12 +408,14 @@ export class Game {
                 game.state_history.remove(keyToRemove);
                 game.order_history.remove(keyToRemove);
                 game.result_history.remove(keyToRemove);
+                game.log_history.remove(keyToRemove);
             }
             game.setPhaseData({
                 name: pastPhase,
                 state: this.state_history.get(pastPhase),
                 orders: this.order_history.get(pastPhase),
-                messages: this.message_history.get(pastPhase)
+                messages: this.message_history.get(pastPhase),
+                logs: this.log_history.get(pastPhase)
             });
             return game;
         }
@@ -454,6 +457,29 @@ export class Game {
         return orders;
     }
 
+    getLogsForPower(role, all) {
+        let logList = null;
+        role = role || this.role;
+        let powerLogs = [];
+        if (all) {
+            logList = this.log_history.values();
+            if (this.logs.size() && !this.message_history.contains(this.phase))
+                logList.push(this.logs);
+        } else {
+            if (this.logs.size())
+                logList = [this.logs];
+            else if (this.log_history.contains(this.phase))
+                logList = this.log_history.get(this.phase);
+        }
+        for (let logs of logList) {
+            for (let log of logs.values()) {
+                let sender = log.sender;
+                if (sender === role)
+                    powerLogs.push(log);
+            }
+        }
+        return powerLogs;
+    }
     getMessageChannels(role, all) {
         const messageChannels = {};
         role = role || this.role;

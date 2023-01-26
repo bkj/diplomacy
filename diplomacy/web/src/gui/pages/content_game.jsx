@@ -1147,6 +1147,29 @@ export class ContentGame extends React.Component {
         );
     }
 
+    renderLogs(engine, role) {
+        const powerLogs = engine.getLogsForPower(role, true);
+        const items = powerLogs.map((logs) =>
+            // eslint-disable-next-line react/jsx-key
+            <Row>
+                <div className="message-content col-md">
+                    {logs.message}
+                </div>
+            </Row>
+        );
+        return (items);
+    }
+    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+        if (pastPhases[phaseIndex] === initialEngine.phase)
+            print("initial engine");
+        return (
+            <Row>
+                {this.renderLogs(engine, currentPowerName)}
+            </Row>
+        );
+    }
+
     renderTabMessages(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
 
@@ -1360,6 +1383,7 @@ export class ContentGame extends React.Component {
                         currentTabOrderCreation
                     )) || ''}
                 </Tabs>
+                {this.renderTabLogs(true, engine, currentPowerName)}
             </main>
         );
     }
