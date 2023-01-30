@@ -50,6 +50,31 @@ import {SvgPure} from "../maps/pure/SvgPure";
 import {MapData} from "../utils/map_data";
 import {Queue} from "../../diplomacy/utils/queue";
 
+
+import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import { MainContainer, ChatContainer, ExpansionPanel, MessageList, MessageSeparator, MessageInput, Sidebar, ConversationList, Conversation, Avatar } from '@chatscope/chat-ui-kit-react';
+import { Message as ChatMessage } from '@chatscope/chat-ui-kit-react';
+import logo from '../utils/shade_log.png'; // with import
+import AUS from '../assets/AUS.png';
+import ENG from '../assets/ENG.png';
+import FRA from '../assets/FRA.png';
+import GER from '../assets/GER.png';
+import ITA from '../assets/ITA.png';
+import RUS from '../assets/RUS.png';
+import TUR from '../assets/TUR.png';
+import GLOBAL from '../assets/GLOBAL.png';
+
+const POWER_ICONS = {
+    AUSTRIA: AUS,
+    ENGLAND: ENG,
+    FRANCE: FRA,
+    GERMANY: GER,
+    ITALY: ITA,
+    RUSSIA: RUS,
+    TURKEY: TUR,
+    GLOBAL: GLOBAL
+};
+
 const HotKey = require('react-shortcut');
 
 /* Order management in game page.
@@ -139,7 +164,8 @@ export class ContentGame extends React.Component {
             power: null,
             orderBuildingType: null,
             orderBuildingPath: [],
-            showAbbreviations: true
+            showAbbreviations: true,
+            val: ""
         };
 
         // Bind some class methods to this instance.
@@ -487,6 +513,10 @@ export class ContentGame extends React.Component {
 
     onChangeTabPastMessages(tab) {
         return this.setState({tabPastMessages: tab});
+    }
+
+    setMessageInputValue(val) {
+        return this.setState({val: val});
     }
 
     sendMessage(networkGame, recipient, body) {
@@ -867,7 +897,6 @@ export class ContentGame extends React.Component {
     }
 
     // [ Rendering methods.
-
     renderOrders(engine, currentPowerName) {
         const serverOrders = this.props.data.getServerOrders();
         const orders = this.__get_orders(engine);
@@ -879,6 +908,103 @@ export class ContentGame extends React.Component {
                                  serverCount={serverOrders[currentPowerName] ? UTILS.javascript.count(serverOrders[currentPowerName]) : -1}
                                  onRemove={this.onRemoveOrder}/>);
         return render;
+    }
+
+    renderPastMessages2(engine, role) {
+        const messageChannels = engine.getMessageChannels(role, true);
+        const tabNames = [];
+        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
+            tabNames.push(powerName);
+        tabNames.sort();
+        tabNames.push('GLOBAL');
+        const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
+        const currentTabId = this.state.tabPastMessages || tabNames[0];
+
+        const convList = tabNames.map((protagonist) =>
+            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
+                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size = "sm" />
+            </Conversation>
+        );
+
+        const powerLogs = engine.getLogsForPower(role, true);
+        const renderedLogs = powerLogs.map((log) =>
+            // eslint-disable-next-line react/jsx-key
+            <ChatMessage model={{
+                message: log.message,
+                sent: log.sent_time,
+                sender: role,
+                direction: "outgoing",
+                position: "single"
+            }}>
+            </ChatMessage>
+        );
+
+        const renderedMessages = [];
+        let protagonist = currentTabId;
+
+        let msgs = messageChannels[protagonist];
+        let sender = "";
+        let rec = "";
+        let dir = "";
+        let curPhase = "";
+        let prevPhase = "";
+        let toggleSep = true;
+
+        for (let m in msgs) {
+            let msg = msgs[m];
+            sender = msg.sender;
+            rec = msg.recipient;
+            curPhase = msg.phase;
+            if (curPhase !== prevPhase) {
+                renderedMessages.push(
+                    <MessageSeparator>
+                        {curPhase}
+                    </MessageSeparator>
+                );
+                prevPhase = curPhase;
+            }
+
+            if (role === sender)
+                dir = "outgoing";
+            if (role === rec)
+                dir = "incoming";
+            renderedMessages.push(
+                <ChatMessage model={{
+                    message: msg.message,
+                    sent: msg.sent_time,
+                    sender: sender,
+                    direction: dir,
+                    position: "single"
+                }} avatarPosition={(dir === 'outgoing' ? 'tr':'tl')}>
+                    <Avatar src = {POWER_ICONS[sender]} name={sender} size="sm" />
+                </ChatMessage>
+            );
+        }
+        return(
+                <div style={{height:"400px"}}>
+                    <MainContainer responsive>
+                        <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
+                            <ConversationList>
+                                {convList}
+                            </ConversationList>
+                        </Sidebar>
+                        <ChatContainer>
+                            <MessageList>
+                                {renderedMessages}
+                            </MessageList>
+                        </ChatContainer>
+
+                        <Sidebar position="right">
+                            <ExpansionPanel title="Captain's Log">
+                                <MessageList>
+                                    {renderedLogs}
+                                </MessageList>
+                            </ExpansionPanel>
+                        </Sidebar>
+
+                    </MainContainer>
+                </div>
+        );
     }
 
     renderPastMessages(engine, role) {
@@ -912,6 +1038,109 @@ export class ContentGame extends React.Component {
         );
     }
 
+    renderCurrentMessages2(engine, role) {
+        const messageChannels = engine.getMessageChannels(role, true);
+        const tabNames = [];
+        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
+            tabNames.push(powerName);
+        tabNames.sort();
+        tabNames.push('GLOBAL');
+        const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
+        const currentTabId = this.state.tabCurrentMessages || tabNames[0];
+        const highlights = this.state.messageHighlights;
+
+        const convList = tabNames.map((protagonist) =>
+            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
+                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" />
+            </Conversation>
+        );
+
+        //const powerLogs = engine.getLogsForPowerAtPhase(role, true);
+        const powerLogs = engine.getLogsForPower(role, true);
+        const renderedLogs = powerLogs.map((log) =>
+            // eslint-disable-next-line react/jsx-key
+            <ChatMessage model={{
+                message: log.message,
+                sent: log.sent_time,
+                sender: role,
+                direction: "outgoing",
+                position: "single"
+            }}>
+            </ChatMessage>
+        );
+
+        const renderedMessages = [];
+        let protagonist = currentTabId;
+
+        let msgs = messageChannels[protagonist];
+        let sender = "";
+        let rec = "";
+        let dir = "";
+        let curPhase = "";
+        let prevPhase = "";
+        let toggleSep = true;
+
+        for (let m in msgs) {
+            let msg = msgs[m];
+            sender = msg.sender;
+            rec = msg.recipient;
+            curPhase = msg.phase;
+            if (curPhase !== prevPhase) {
+                renderedMessages.push(
+                    <MessageSeparator>
+                        {curPhase}
+                    </MessageSeparator>
+                );
+                prevPhase = curPhase;
+            }
+
+            if (role === sender)
+                dir = "outgoing";
+            if (role === rec)
+                dir = "incoming";
+            renderedMessages.push(
+                <ChatMessage model={{
+                    message: msg.message,
+                    sent: msg.sent_time,
+                    sender: sender,
+                    direction: dir,
+                    position: "single"
+                }} avatarPosition={(dir === 'outgoing' ? 'tr':'tl')}>
+                    <Avatar src = {POWER_ICONS[sender]} name={sender} size="sm" />
+                </ChatMessage>
+            );
+        }
+
+        return (
+
+                <div style={{height:"400px"}}>
+                    <MainContainer responsive>
+                        <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
+                            <ConversationList>
+                                {convList}
+                            </ConversationList>
+                        </Sidebar>
+                        <ChatContainer>
+                            <MessageList>
+                                {renderedMessages}
+                            </MessageList>
+
+                            {engine.isPlayerGame() && (
+                            <MessageInput attachButton={false} onChange={val => this.setMessageInputValue(val)} onSend={() => alert(this.state.val)} />)}
+                        </ChatContainer>
+
+                        <Sidebar position="right">
+                            <ExpansionPanel title="Captain's Log">
+                                <MessageList>
+                                    {renderedLogs}
+                                </MessageList>
+                            </ExpansionPanel>
+                        </Sidebar>
+                    </MainContainer>
+                </div>
+
+        );
+    }
     renderCurrentMessages(engine, role) {
         const messageChannels = engine.getMessageChannels(role, true);
         const tabNames = [];
@@ -1162,7 +1391,7 @@ export class ContentGame extends React.Component {
     renderTabLogs(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
         if (pastPhases[phaseIndex] === initialEngine.phase)
-            print("initial engine");
+            Diplog.info("initial phase");
         return (
             <Row>
                 {this.renderLogs(engine, currentPowerName)}
@@ -1198,6 +1427,8 @@ export class ContentGame extends React.Component {
             </Tab>
         );
     }
+
+
 
     renderTabCurrentPhase(toDisplay, engine, powerName, orderType, orderPath, currentPowerName, currentTabOrderCreation) {
         const powerNames = Object.keys(engine.powers);
@@ -1235,6 +1466,21 @@ export class ContentGame extends React.Component {
         );
     }
 
+    renderTabChat(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+
+        return (
+            <div className={'col-xl'}>
+                {this.__form_phases(pastPhases, phaseIndex)}
+                {pastPhases[phaseIndex] === initialEngine.phase ? (
+                    this.renderCurrentMessages2(initialEngine, currentPowerName)
+                ) : (
+                    this.renderPastMessages2(engine, currentPowerName)
+                )}
+            </div>
+        );
+
+    }
     // ]
 
     // [ React.Component overridden methods.
@@ -1383,7 +1629,8 @@ export class ContentGame extends React.Component {
                         currentTabOrderCreation
                     )) || ''}
                 </Tabs>
-                {this.renderTabLogs(true, engine, currentPowerName)}
+                {mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)}
+
             </main>
         );
     }

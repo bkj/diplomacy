@@ -458,12 +458,12 @@ export class Game {
     }
 
     getLogsForPower(role, all) {
-        let logList = null;
+        let logList = [];
         role = role || this.role;
         let powerLogs = [];
         if (all) {
             logList = this.log_history.values();
-            if (this.logs.size() && !this.message_history.contains(this.phase))
+            if (this.logs.size() && !this.log_history.contains(this.phase))
                 logList.push(this.logs);
         } else {
             if (this.logs.size())
