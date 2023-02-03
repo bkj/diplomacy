@@ -1107,7 +1107,7 @@ export class ContentGame extends React.Component {
                 }
             }
             return '';
-        };
+        }
 
         const orderView = [
             this.__form_phases(pastPhases, phaseIndex),
@@ -1147,6 +1147,32 @@ export class ContentGame extends React.Component {
         );
     }
 
+    renderLogs(engine, role) {
+        const powerLogs = engine.getLogsForPower(role, true);
+        const items = powerLogs.map((logs) =>
+            <tr>
+                <th scope="row">{logs.phase}</th>
+                <td>{logs.message}</td>
+            </tr>
+        );
+        return (
+            <table className={"table table-bordered"}>
+                <tbody>
+                    {items}
+                </tbody>
+            </table>
+        );
+    }
+    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+        if (pastPhases[phaseIndex] === initialEngine.phase)
+            Diplog.info("initial phase");
+        return (
+            <Row>
+                {this.renderLogs(engine, currentPowerName)}
+            </Row>
+        );
+    }
     renderTabMessages(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
 
@@ -1360,6 +1386,7 @@ export class ContentGame extends React.Component {
                         currentTabOrderCreation
                     )) || ''}
                 </Tabs>
+                {this.renderTabLogs(true, engine, currentPowerName)}
             </main>
         );
     }
