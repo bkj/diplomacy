@@ -1148,7 +1148,7 @@ export class ContentGame extends React.Component {
     }
 
     renderLogs(engine, role) {
-        const powerLogs = engine.getLogsForPowerByPhase(role, true);
+        const powerLogs = engine.getLogsForPower(role, true);
         const items = powerLogs.map((logs) =>
             <tr>
                 <th scope="row">{logs.phase}</th>
@@ -1176,9 +1176,14 @@ export class ContentGame extends React.Component {
         if (pastPhases[phaseIndex] === initialEngine.phase)
             Diplog.info("initial phase");
         return (
-            <div className={"row justify-content-end"}>
+            <div className={"row justify-content-end"} style={{maxHeight:"500px",overflow:"auto"}}>
                 <div className={"col-6"}>
-                    {this.renderLogs(engine, currentPowerName)}
+                    {pastPhases[phaseIndex] === initialEngine.phase ? (
+                        this.renderLogs(initialEngine, currentPowerName)
+                    ) : (
+                        this.renderLogs(engine, currentPowerName)
+                    )}
+
                 </div>
             </div>
         );
