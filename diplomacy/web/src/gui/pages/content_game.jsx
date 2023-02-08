@@ -1148,15 +1148,23 @@ export class ContentGame extends React.Component {
     }
 
     renderLogs(engine, role) {
-        const powerLogs = engine.getLogsForPower(role, true);
+        const powerLogs = engine.getLogsForPowerByPhase(role, true);
         const items = powerLogs.map((logs) =>
             <tr>
                 <th scope="row">{logs.phase}</th>
+                <th>{logs.sender}</th>
                 <td>{logs.message}</td>
             </tr>
         );
         return (
-            <table className={"table table-bordered"}>
+            <table className={"table table-bordered table-hover table-sm"}>
+                <thead>
+                    <tr>
+                        <th scope="col">Phase</th>
+                        <th scope="col">Sender</th>
+                        <th scope="col">Log</th>
+                    </tr>
+                </thead>
                 <tbody>
                     {items}
                 </tbody>
@@ -1168,9 +1176,11 @@ export class ContentGame extends React.Component {
         if (pastPhases[phaseIndex] === initialEngine.phase)
             Diplog.info("initial phase");
         return (
-            <Row>
-                {this.renderLogs(engine, currentPowerName)}
-            </Row>
+            <div className={"row justify-content-end"}>
+                <div className={"col-6"}>
+                    {this.renderLogs(engine, currentPowerName)}
+                </div>
+            </div>
         );
     }
     renderTabMessages(toDisplay, initialEngine, currentPowerName) {

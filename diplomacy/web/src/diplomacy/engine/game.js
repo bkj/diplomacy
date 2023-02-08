@@ -481,6 +481,28 @@ export class Game {
         }
         return powerLogs;
     }
+
+    getLogsForPowerByPhase(role, all) {
+        let logList = [];
+        role = role || this.role;
+        let powerLogs = [];
+        if (this.logs.size() && !this.log_history.contains(this.phase)) {
+            logList.push(this.logs)
+        }
+        if (this.log_history.contains(this.phase)) {
+            logList.push(this.log_history.get(this.phase));
+        }
+
+        for (let logs of logList) {
+            for (let log of logs.values()) {
+                let sender = log.sender;
+                if (sender === role)
+                    powerLogs.push(log);
+            }
+        }
+        return powerLogs;
+    }
+
     getMessageChannels(role, all) {
         const messageChannels = {};
         role = role || this.role;
