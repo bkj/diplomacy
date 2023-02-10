@@ -816,7 +816,7 @@ class Game(Jsonable):
         for power_name, controller in powers_controllers.items():
             self.get_power(power_name).update_controller(controller, timestamps[power_name])
 
-    def new_power_message(self, recipient, body):
+    def new_power_message(self, recipient, body, thread_idx=None):
         """ Create a undated (without timestamp) power message to be sent from a power to another via server.
             Server will answer with timestamp, and message will be updated
             and added to local game messages.
@@ -829,7 +829,7 @@ class Game(Jsonable):
         assert self.is_player_game()
         if not self.has_power(recipient):
             raise exceptions.MapPowerException(recipient)
-        return Message(phase=self.current_short_phase, sender=self.role, recipient=recipient, message=body)
+        return Message(phase=self.current_short_phase, sender=self.role, recipient=recipient, message=body, thread_idx=thread_idx)
 
     def new_global_message(self, body):
         """ Create an undated (without timestamp) global message to be sent from a power via server.
@@ -867,7 +867,21 @@ class Game(Jsonable):
             time.sleep(1e-6)
             message.time_sent = common.timestamp_microseconds()
 
+        if message.thread_idx is not None and (not self.is_player_game()):
+            def _is_current_thread(a, b):
+                if (a.phase != b.phase):                                       return False
+                if (a.sender == b.sender)    and (a.recipient == b.recipient): return True
+                if (a.sender == b.recipient) and (a.recipient == b.sender):    return True
+                return False
+
+            expected_thread_idx = len([msg for msg in self.messages.values() if _is_current_thread(msg, message)])
+            if message.thread_idx != expected_thread_idx:
+                print('rejected', self.role, message)
+                return 0
+
         self.messages.put(message.time_sent, message)
+        # print('accepted', self.role, message)
+
         return message.time_sent
 
     # Vote methods. For server and omniscient games only.

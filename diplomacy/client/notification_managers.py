@@ -115,6 +115,7 @@ def on_game_message_received(game, notification):
         :type game: diplomacy.client.network_game.NetworkGame
         :type notification: diplomacy.communication.notifications.GameMessageReceived
     """
+    # print('on_game_message_received:', game.power.name, notification.message)
     Game.add_message(game, notification.message)
 
 def on_game_processed(game, notification):
