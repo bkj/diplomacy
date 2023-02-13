@@ -72,6 +72,7 @@ class Message(Jsonable):
         strings.TIME_SENT: parsing.OptionalValueType(int),  # given by server.
         strings.PHASE: str,                                 # phase short name (e.g. 'S1901M' or 'COMPLETED')
         strings.MESSAGE: str,
+        strings.THREAD_IDX: parsing.OptionalValueType(int),
     }
 
     def __init__(self, **kwargs):
@@ -80,10 +81,11 @@ class Message(Jsonable):
         self.time_sent = None               # type: int
         self.phase = None                   # type: str
         self.message = None                 # type: str
+        self.thread_idx = None              # type: int
         super(Message, self).__init__(**kwargs)
 
     def __str__(self):
-        return '[%d/%s/%s->%s](%s)' % (self.time_sent or 0, self.phase, self.sender, self.recipient, self.message)
+        return '[%d/%s/%s->%s/tid=%d](%s)' % (self.time_sent or 0, self.phase, self.sender, self.recipient, self.thread_idx or -1, self.message)
 
     def __hash__(self):
         return hash(self.time_sent)
