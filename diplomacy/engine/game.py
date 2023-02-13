@@ -958,7 +958,7 @@ class Game(Jsonable):
             time.sleep(1e-6)
             message.time_sent = common.timestamp_microseconds()
 
-        if message.thread_idx is not None and (not self.is_player_game()):
+        if (message.thread_idx is not None) and (not self.is_player_game()):
             def _is_current_thread(a, b):
                 if (a.phase != b.phase):                                       return False
                 if (a.sender == b.sender)    and (a.recipient == b.recipient): return True
