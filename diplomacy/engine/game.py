@@ -969,7 +969,10 @@ class Game(Jsonable):
             if message.thread_idx != expected_thread_idx:
                 print('rejected', self.role, message)
                 return 0
-                
+        
+        if not self.is_player_game():
+            print('accepted', self.role, message)
+        
         self.messages.put(message.time_sent, message)
         return message.time_sent
 
