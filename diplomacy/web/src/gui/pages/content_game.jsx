@@ -54,7 +54,6 @@ import {Queue} from "../../diplomacy/utils/queue";
 import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { MainContainer, ChatContainer, ExpansionPanel, MessageList, MessageSeparator, MessageInput, Sidebar, ConversationList, Conversation, Avatar } from '@chatscope/chat-ui-kit-react';
 import { Message as ChatMessage } from '@chatscope/chat-ui-kit-react';
-import logo from '../utils/shade_log.png'; // with import
 import AUS from '../assets/AUS.png';
 import ENG from '../assets/ENG.png';
 import FRA from '../assets/FRA.png';
@@ -1126,7 +1125,10 @@ export class ContentGame extends React.Component {
                             </MessageList>
 
                             {engine.isPlayerGame() && (
-                            <MessageInput attachButton={false} onChange={val => this.setMessageInputValue(val)} onSend={() => alert(this.state.val)} />)}
+                            <MessageInput attachButton={false}
+                                          onChange={val => this.setMessageInputValue(val)}
+                                          onSend={() =>  this.sendMessage(engine.client, currentTabId, this.state.val)}
+                            />)}
                         </ChatContainer>
 
                         <Sidebar position="right">
