@@ -92,7 +92,7 @@ class ServerGame(Game):
                                  orders=phase_data.orders,
                                  results=phase_data.results,
                                  messages=self.filter_messages(phase_data.messages, role),
-                                 logs=self.filter_logs(phase_data.messages, role))
+                                 logs=self.filter_logs(phase_data.logs, role))
         # Filter for power roles.
         related_power_names = self.get_related_power_names(role)
         # Filter messages.
