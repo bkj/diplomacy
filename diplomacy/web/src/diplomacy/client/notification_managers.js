@@ -50,6 +50,9 @@ export const NOTIFICATION_MANAGERS = {
     game_message_received: function (game, notification) {
         game.local.addMessage(notification.message);
     },
+    log_received: function (game, notification) {
+        game.local.addLog(notification.message);
+    },
     game_processed: function (game, notification) {
         game.local.extendPhaseHistory(notification.previous_phase_data);
         game.local.setPhaseData(notification.current_phase_data);

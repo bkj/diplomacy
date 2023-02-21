@@ -227,6 +227,17 @@ export class Game {
         this.messages.put(message.time_sent, message);
     }
 
+    addLog(message) {
+        message = new Message(message);
+        if (!message.time_sent)
+            throw new Error('No time sent for given message.');
+        if (this.logs.hasOwnProperty(message.time_sent))
+            throw new Error('There is already a log with time sent ' + message.time_sent + ' in message history.');
+        if (this.isPlayerGame() && !message.isGlobal() && this.role !== message.sender && this.role !== message.recipient)
+            throw new Error('Given message is not related to current player ' + this.role);
+        this.logs.put(message.time_sent, message);
+    }
+
     assertPlayerGame(powerName) {
         if (!this.isPlayerGame(powerName))
             throw new Error('Expected a player game' + (powerName ? (' ' + powerName) : '') + ', got role ' + this.role + '.');

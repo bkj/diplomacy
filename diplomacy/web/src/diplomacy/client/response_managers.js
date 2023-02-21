@@ -68,6 +68,11 @@ export const RESPONSE_MANAGERS = {
         message.time_sent = response.data;
         context.game.local.addMessage(message);
     },
+    send_log_data: function (context, response) {
+        const message = context.request.log;
+        message.time_sent = response.data;
+        context.game.local.addLog(message);
+    },
     set_game_state: function (context, response) {
         context.game.local.setPhaseData({
             name: context.request.state.name,
