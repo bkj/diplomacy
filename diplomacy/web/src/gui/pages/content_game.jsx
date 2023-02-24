@@ -1617,7 +1617,7 @@ export class ContentGame extends React.Component {
         return (
             <Tab id={'tab-phase-history'} display={toDisplay}>
                 <Row>
-                    <div className={'col-xl'}>
+                    <div className={'col-xl'} >
                         {this.state.historyCurrentOrders && (
                             <div className={'history-current-orders'}>{this.state.historyCurrentOrders.join(', ')}</div>
                         )}
