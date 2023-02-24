@@ -136,11 +136,11 @@ function noPromise() {
 
 class CaptainsLog extends React.Component {
     constructor (props) {
-        super(props)
+        super(props);
 
         this.state = {
             logData: "",
-            logs: props.logs || []
+            logs: this.props.logs
         }
         
         this.sendLogData = this.sendLogData.bind(this);
@@ -208,7 +208,7 @@ class CaptainsLog extends React.Component {
                     model={{
                         message: log.message,
                         sent: log.sent_time,
-                        sender: this.role,
+                        sender: this.props.role,
                         direction: "outgoing",
                         position: "single"
                     }}
@@ -1345,7 +1345,7 @@ export class ContentGame extends React.Component {
                 <CaptainsLog
                     page={this.getPage()}
                     networkGame={engine.client}
-                    role={currentTabId}
+                    role={role}
                     logs={powerLogs}
                     showChatInput={engine.isPlayerGame()}
                 />
