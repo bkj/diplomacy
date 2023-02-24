@@ -210,10 +210,12 @@ export class Game {
         if (this.message_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in message history.`);
         if (this.order_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in order history.`);
         if (this.result_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in result history.`);
+        if (this.log_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in result history.`);
         this.state_history.put(phaseData.name, phaseData.state);
         this.order_history.put(phaseData.name, phaseData.orders);
         this.result_history.put(phaseData.name, phaseData.results);
         this.message_history.put(phaseData.name, new SortedDict(phaseData.messages, parseInt));
+        this.log_history.put(phaseData.name, new SortedDict(phaseData.logs, parseInt));
     }
 
     addMessage(message) {

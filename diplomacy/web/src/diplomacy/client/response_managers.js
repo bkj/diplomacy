@@ -79,7 +79,8 @@ export const RESPONSE_MANAGERS = {
             state: context.request.state,
             orders: context.request.orders,
             messages: context.request.messages,
-            results: context.request.results
+            results: context.request.results,
+            logs: context.request.logs
         });
     },
     set_game_status: function (context, response) {
