@@ -49,7 +49,6 @@ import {SvgModern} from "../maps/modern/SvgModern";
 import {SvgPure} from "../maps/pure/SvgPure";
 import {MapData} from "../utils/map_data";
 import {Queue} from "../../diplomacy/utils/queue";
-
 import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import {
     MainContainer,
@@ -134,7 +133,7 @@ function noPromise() {
     return new Promise(resolve => resolve());
 }
 
-class CaptainsLog extends React.Component {
+/*class CaptainsLog extends React.Component {
     constructor (props) {
         super(props);
 
@@ -248,7 +247,7 @@ class CaptainsLog extends React.Component {
             )
         )
     }
-}
+}*/
 
 export class ContentGame extends React.Component {
 
@@ -1077,9 +1076,12 @@ export class ContentGame extends React.Component {
         tabNames.push('GLOBAL');
         const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
         const currentTabId = this.state.tabPastMessages || tabNames[0];
+        const curController = engine.powers[role].getController()
+        // const highlights = this.state.messageHighlights;
+
 
         const convList = tabNames.map((protagonist) =>
-            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
+            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
                 <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size = "sm" />
             </Conversation>
         );
@@ -1167,40 +1169,42 @@ export class ContentGame extends React.Component {
         }
 
         return(
-            <div style={{height:"400px"}}>
-                <MainContainer responsive>
-                    <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
-                        <ConversationList>
-                            {convList}
-                        </ConversationList>
-                    </Sidebar>
+            <Row>
+                <div className={"col-6"} style={{height:"500px"}}>
+                    <MainContainer responsive>
+                            <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
+                                <ConversationList>
+                                    {convList}
+                                </ConversationList>
+                            </Sidebar>
+                            <ChatContainer>
+                                <MessageList>
+                                    {renderedMessages}
+                                </MessageList>
+                            </ChatContainer>
+                    </MainContainer>
+                </div>
+                <div className={"col"} style={{height:"500px"}}>
                     <ChatContainer>
+                        <ConversationHeader>
+                            <ConversationHeader.Content
+                                userName = {role.toString() + " (" + curController + ")" + ": Captain's Log"}
+                                info={powerLogs.length ? "" : "No log messages to show"}
+                            />
+                        </ConversationHeader>
                         <MessageList>
-                            {renderedMessages}
+                            {renderedLogs}
                         </MessageList>
                     </ChatContainer>
-                    <Sidebar position="right" scrollable={true}>
-                        <ChatContainer>
-                            <ConversationHeader>
-                                <ConversationHeader.Content
-                                    userName="Captain's Log - Past"
-                                    info={powerLogs.length ? "" : "No log messages to show"}
-                                />
-                            </ConversationHeader>
-                            <MessageList>
-                                {renderedLogs}
-                            </MessageList>
-                        </ChatContainer>
-                    </Sidebar>
-                </MainContainer>
-                {/* <CaptainsLog
-                    page={this.getPage()}
-                    networkGame={engine.client}
-                    role={currentTabId}
-                    logs={powerLogs}
-                    showChatInput={engine.isPlayerGame() || (currentTabId == STRINGS.OMNISCIENT)}
+                    {/* <CaptainsLog
+                            page={this.getPage()}
+                            networkGame={engine.client}
+                            role={currentTabId}
+                            logs={powerLogs}
+                            showChatInput={engine.isPlayerGame() || (currentTabId == STRINGS.OMNISCIENT)}
                 /> */}
-            </div>
+                </div>
+            </Row>
         );
     }
 
@@ -1258,7 +1262,7 @@ export class ContentGame extends React.Component {
                 <ChatContainer>
                     <ConversationHeader>
                         <ConversationHeader.Content
-                            userName="Captain's Log - Past"
+                            userName='Captains log'
                             info={powerLogs.length ? "" : "No log messages to show"}
                         />
                     </ConversationHeader>
@@ -1279,6 +1283,7 @@ export class ContentGame extends React.Component {
         tabNames.push('GLOBAL');
         // const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
         const currentTabId = this.state.tabCurrentMessages || tabNames[0];
+        const curController = engine.powers[role].getController()
         // const highlights = this.state.messageHighlights;
 
 
@@ -1290,16 +1295,33 @@ export class ContentGame extends React.Component {
 
         //const powerLogs = engine.getLogsForPowerAtPhase(role, true);
         const powerLogs = engine.getLogsForPower(role, true);
-        const renderedLogs = powerLogs.map((log) =>
-            // eslint-disable-next-line react/jsx-key
-            <ChatMessage model={{
-                message: log.message,
-                sent: log.sent_time,
-                sender: role,
-                direction: "outgoing",
-                position: "single"
-            }}/>
-        );
+        let renderedLogs = []
+        let curPhase = ""
+        let prevPhase = ""
+        powerLogs.forEach((log) => {
+            if (log.phase != prevPhase) {
+                curPhase = log.phase
+                renderedLogs.push(
+                    <MessageSeparator>
+                        {curPhase}
+                    </MessageSeparator>
+                )
+
+                prevPhase = curPhase
+            }
+
+            renderedLogs.push(
+                // eslint-disable-next-line react/jsx-key
+                <ChatMessage model={{
+                    message: log.message,
+                    sent: log.sent_time,
+                    sender: role,
+                    direction: "outgoing",
+                    position: "single"
+                }}>
+                </ChatMessage>
+            )
+        })
 
         const renderedMessages = [];
         let protagonist = currentTabId;
@@ -1308,8 +1330,8 @@ export class ContentGame extends React.Component {
         let sender = "";
         let rec = "";
         let dir = "";
-        let curPhase = "";
-        let prevPhase = "";
+        curPhase = "";
+        prevPhase = "";
         let toggleSep = true;
 
         for (let m in msgs) {
@@ -1381,12 +1403,22 @@ export class ContentGame extends React.Component {
                         <ChatContainer>
                             <ConversationHeader>
                                 <ConversationHeader.Content
-                                    userName={role.toString() + "Captain's Log"}
+                                    userName={role.toString() + " (" + curController + ")" + ": Captain's Log"}
                                 />
                             </ConversationHeader>
                             <MessageList>
                                 {renderedLogs}
                             </MessageList>
+                            {engine.isPlayerGame() && (
+                                <MessageInput
+                                    attachButton={false}
+                                    onChange={val => this.setlogDataInputValue(val)}
+                                    onSend={() =>  {
+                                        const message = this.sendLogData(engine.client, this.state.logData)
+                                        //this.setLogs([...this.state.logs, message])
+                                    }}
+                                />
+                            )}
                         </ChatContainer>
                     </MainContainer>
 
@@ -1536,7 +1568,7 @@ export class ContentGame extends React.Component {
 
     __form_phases(pastPhases, phaseIndex) {
         return (
-            <form key={1} className="form-inline mb-4">
+            <form key={1} className="form-inline">
                 <div className="custom-control-inline">
                     <Button title={UTILS.html.UNICODE_LEFT_ARROW} onClick={this.onDecrementPastPhase} pickEvent={true}
                             disabled={phaseIndex === 0}/>
@@ -1757,6 +1789,8 @@ export class ContentGame extends React.Component {
          );
 
      }
+
+
     // ]
 
     // [ React.Component overridden methods.
@@ -1848,6 +1882,7 @@ export class ContentGame extends React.Component {
                     <label className="custom-control-label" htmlFor="show-abbreviations">Show abbreviations</label>
                 </div>
             </form>
+
         );
 
         const currentTabOrderCreation = hasTabCurrentPhase && (
@@ -1910,6 +1945,7 @@ export class ContentGame extends React.Component {
                     title={title}
                     afterTitle={navAfterTitle}
                     username={page.channel.username}
+                    phaseSel={this.__form_phases(pastPhases, phaseIndex)}
                     navigation={navigation}
                 />
                 {/*<Tabs
@@ -1934,9 +1970,7 @@ export class ContentGame extends React.Component {
                 </Tabs>*/}
                 {/*{mainTab === 'messages' && this.renderTabLogs(mainTab === 'messages', engine, currentPowerName)}*/}
                 {/*{mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)}*/}
-                <div className={'col-xl'}>
-                    {this.__form_phases(pastPhases, phaseIndex)}
-                </div>
+
                 {phasePanel}
                 {this.renderTabChat(true, engine, currentPowerName)}
             </main>

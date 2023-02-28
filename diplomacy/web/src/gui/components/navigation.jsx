@@ -24,10 +24,16 @@ export class Navigation extends React.Component {
         if (hasNavigation) {
             return (
                 <div className={'title row'}>
-                    <div className={'col align-self-center'}>
+                    <div className={'col-4'}>
                         <strong>{this.props.title}</strong>
+                    </div>
+                    <div className={'col'}>
                         {this.props.afterTitle ? this.props.afterTitle : ''}
                     </div>
+                    <div className={'col-3'}>
+                        {this.props.phaseSel ? this.props.phaseSel : ''}
+                    </div>
+
                     <div className={'col-sm-1'}>
                         {(!hasNavigation && (
                             <div className={'float-right'}>
