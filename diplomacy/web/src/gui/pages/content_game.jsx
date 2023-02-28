@@ -1179,19 +1179,19 @@ export class ContentGame extends React.Component {
                             {renderedMessages}
                         </MessageList>
                     </ChatContainer>
-                </MainContainer>
-                <MainContainer>
-                    <ChatContainer>
-                        <ConversationHeader>
-                            <ConversationHeader.Content
-                                userName="Captain's Log - Past"
-                                info={powerLogs.length ? "" : "No log messages to show"}
-                            />
-                        </ConversationHeader>
-                        <MessageList>
-                            {renderedLogs}
-                        </MessageList>
-                    </ChatContainer>
+                    <Sidebar position="right" scrollable={true}>
+                        <ChatContainer>
+                            <ConversationHeader>
+                                <ConversationHeader.Content
+                                    userName="Captain's Log - Past"
+                                    info={powerLogs.length ? "" : "No log messages to show"}
+                                />
+                            </ConversationHeader>
+                            <MessageList>
+                                {renderedLogs}
+                            </MessageList>
+                        </ChatContainer>
+                    </Sidebar>
                 </MainContainer>
                 {/* <CaptainsLog
                     page={this.getPage()}
@@ -1239,6 +1239,37 @@ export class ContentGame extends React.Component {
     //     );
     // }
 
+    renderCurrentLogs(engine, role) {
+        const powerLogs = engine.getLogsForPower(role, true);
+        const renderedLogs = powerLogs.map((log) =>
+            // eslint-disable-next-line react/jsx-key
+            <ChatMessage model={{
+                message: log.message,
+                sent: log.sent_time,
+                sender: role,
+                direction: "outgoing",
+                position: "single"
+            }}/>
+
+        );
+
+        return (
+            <MainContainer>
+                <ChatContainer>
+                    <ConversationHeader>
+                        <ConversationHeader.Content
+                            userName="Captain's Log - Past"
+                            info={powerLogs.length ? "" : "No log messages to show"}
+                        />
+                    </ConversationHeader>
+                    <MessageList>
+                        {renderedLogs}
+                    </MessageList>
+                </ChatContainer>
+            </MainContainer>
+        );
+    }
+
     renderCurrentMessages(engine, role) {
         const messageChannels = engine.getMessageChannels(role, true);
         const tabNames = [];
@@ -1250,8 +1281,9 @@ export class ContentGame extends React.Component {
         const currentTabId = this.state.tabCurrentMessages || tabNames[0];
         // const highlights = this.state.messageHighlights;
 
+
         const convList = tabNames.map((protagonist) =>
-            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
+            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
                 <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" />
             </Conversation>
         );
@@ -1316,40 +1348,57 @@ export class ContentGame extends React.Component {
         }
 
         return (
-            <div style={{height:"400px"}}>
-                <MainContainer responsive>
-                    <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
-                        <ConversationList>
-                            {convList}
-                        </ConversationList>
-                    </Sidebar>
-                    <ChatContainer>
-                        <MessageList>
-                            {renderedMessages}
-                        </MessageList>
-                        {engine.isPlayerGame() && (
-                            <MessageInput 
-                                attachButton={false}
-                                onChange={val => this.setMessageInputValue(val)}
-                                onSend={() =>  {
-                                    this.sendMessage(
-                                        engine.client,
-                                        currentTabId,
-                                        this.state.message
-                                    )
-                                }}
-                            />
-                        )}
-                    </ChatContainer>
-                </MainContainer>
-                <CaptainsLog
-                    page={this.getPage()}
-                    networkGame={engine.client}
-                    role={role}
-                    logs={powerLogs}
-                    showChatInput={engine.isPlayerGame()}
-                />
-            </div>
+            <Row>
+                <div className={"col-6"} style={{height:"500px"}}>
+                    <MainContainer responsive>
+                        <Sidebar position="left" scrollable={true}>
+                            <ConversationList>
+                                {convList}
+                            </ConversationList>
+                        </Sidebar>
+                        <ChatContainer>
+                            <MessageList>
+                                {renderedMessages}
+                            </MessageList>
+                            {engine.isPlayerGame() && (
+                                <MessageInput
+                                    attachButton={false}
+                                    onChange={val => this.setMessageInputValue(val)}
+                                    onSend={() =>  {
+                                        this.sendMessage(
+                                            engine.client,
+                                            currentTabId,
+                                            this.state.message
+                                        )
+                                    }}
+                                />
+                            )}
+                        </ChatContainer>
+                    </MainContainer>
+                </div>
+                <div className={"col"} style={{height:"500px"}}>
+                    <MainContainer responsive>
+                        <ChatContainer>
+                            <ConversationHeader>
+                                <ConversationHeader.Content
+                                    userName={role.toString() + "Captain's Log"}
+                                />
+                            </ConversationHeader>
+                            <MessageList>
+                                {renderedLogs}
+                            </MessageList>
+                        </ChatContainer>
+                    </MainContainer>
+
+                    {/*<CaptainsLog
+                        page={this.getPage()}
+                        networkGame={engine.client}
+                        role={role}
+                        logs={powerLogs}
+                        showChatInput={engine.isPlayerGame() || engine.isOmniscientGame() }
+                    />*/}
+                </div>
+            </Row>
         );
     }
     // renderCurrentMessages_Deprecated(engine, role) {
@@ -1550,7 +1599,7 @@ export class ContentGame extends React.Component {
         };
 
         const orderView = [
-            this.__form_phases(pastPhases, phaseIndex),
+            //this.__form_phases(pastPhases, phaseIndex),
             (((countOrders && (
                     <div key={2} className={'past-orders container'}>
                         {powerNames.map(powerName => !orders[powerName] || !orders[powerName].length ? '' : (
@@ -1646,13 +1695,13 @@ export class ContentGame extends React.Component {
         const orderedPowers = powerNames.map(pn => engine.powers[pn]);
         return (
             <Tab id={'tab-current-phase'} display={toDisplay}>
-                <Row>
-                    <div className={'col-xl'}>
+                <Row >
+                    <div className={'col-6'} >
                         {this.renderMapForCurrent(engine, powerName, orderType, orderPath)}
                     </div>
-                    <div className={'col-xl'}>
+                    <div className={'col'} >
                         {/* Orders. */}
-                        <div className={'panel-orders mb-4'}>
+                        <div className={'panel-orders mb-4'} style={{maxHeight:'500px', overflowY:"scroll"}}>
                             {currentTabOrderCreation ? <div className="mb-4">{currentTabOrderCreation}</div> : ''}
                             <PowerOrdersActionBar
                                 onReset={this.reloadServerOrders}
@@ -1676,21 +1725,38 @@ export class ContentGame extends React.Component {
         );
     }
 
-    // renderTabChat(toDisplay, initialEngine, currentPowerName) {
-    //     const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+    renderMainPanel(toDisplay, initialEngine, currentPowerName, hasTabPhaseHistory, hasTabCurrentPhase, orderBuildingType, orderBuildingPath, currentTabOrderCreation) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
 
-    //     return (
-    //         <div >
-    //             {this.__form_phases(pastPhases, phaseIndex)}
-    //             {pastPhases[phaseIndex] === initialEngine.phase ? (
-    //                 this.renderCurrentMessages(initialEngine, currentPowerName)
-    //             ) : (
-    //                 this.renderPastMessages(engine, currentPowerName)
-    //             )}
-    //         </div>
-    //     );
+    }
 
-    // }
+    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+        return (
+            <div>
+                {pastPhases[phaseIndex] === initialEngine.phase ? (
+                    this.renderCurrentLogs(initialEngine, currentPowerName)
+                ) : (
+                    <p>"HEY THERE!</p>
+                )}
+            </div>
+        );
+    }
+
+     renderTabChat(toDisplay, initialEngine, currentPowerName) {
+         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+
+         return (
+             <div>
+                 {pastPhases[phaseIndex] === initialEngine.phase ? (
+                     this.renderCurrentMessages(initialEngine, currentPowerName)
+                 ) : (
+                     this.renderPastMessages(engine, currentPowerName)
+                 )}
+             </div>
+         );
+
+     }
     // ]
 
     // [ React.Component overridden methods.
@@ -1815,6 +1881,26 @@ export class ContentGame extends React.Component {
             </div>
         );
 
+        const {engineCur, pastPhases, phaseIndex} = this.__get_engine_to_display(engine);
+        let phasePanel;
+        if (pastPhases[phaseIndex] === engine.phase) {
+            if (hasTabCurrentPhase) {
+                phasePanel = this.renderTabCurrentPhase(
+                    true,
+                    engine,
+                    currentPowerName,
+                    orderBuildingType,
+                    this.state.orderBuildingPath,
+                    currentPowerName,
+                    currentTabOrderCreation
+                );
+            } else if (hasTabPhaseHistory) {
+                phasePanel = this.renderTabResults(true, engine);
+            }
+        } else {
+            phasePanel = this.renderTabResults(true, engine);
+        }
+
         return (
             <main>
                 <Helmet>
@@ -1826,16 +1912,16 @@ export class ContentGame extends React.Component {
                     username={page.channel.username}
                     navigation={navigation}
                 />
-                <Tabs
+                {/*<Tabs
                     menu={tabNames}
                     titles={tabTitles}
                     onChange={this.onChangeMainTab}
                     active={mainTab}
                 >
-                    {/* Tab Phase history. */}
+                     Tab Phase history.
                     {(hasTabPhaseHistory && mainTab === 'phase_history' && this.renderTabResults(mainTab === 'phase_history', engine)) || ''}
                     {mainTab === 'messages' && this.renderTabMessages(mainTab === 'messages', engine, currentPowerName)}
-                    {/* Tab Current phase. */}
+                     Tab Current phase.
                     {(mainTab === 'current_phase' && hasTabCurrentPhase && this.renderTabCurrentPhase(
                         mainTab === 'current_phase',
                         engine,
@@ -1845,8 +1931,14 @@ export class ContentGame extends React.Component {
                         currentPowerName,
                         currentTabOrderCreation
                     )) || ''}
-                </Tabs>
-                {/* {mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)} */}
+                </Tabs>*/}
+                {/*{mainTab === 'messages' && this.renderTabLogs(mainTab === 'messages', engine, currentPowerName)}*/}
+                {/*{mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)}*/}
+                <div className={'col-xl'}>
+                    {this.__form_phases(pastPhases, phaseIndex)}
+                </div>
+                {phasePanel}
+                {this.renderTabChat(true, engine, currentPowerName)}
             </main>
         );
     }
