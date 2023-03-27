@@ -84,6 +84,7 @@ import inspect
 import logging
 
 from diplomacy.engine.message import Message
+from diplomacy.engine.log import Log
 from diplomacy.utils import common, exceptions, parsing, strings
 from diplomacy.utils.network_data import NetworkData
 from diplomacy.utils.parsing import OptionalValueType
@@ -685,6 +686,18 @@ class SendGameMessage(_AbstractGameRequest):
     def __init__(self, **kwargs):
         self.message = None  # type: Message
         super(SendGameMessage, self).__init__(**kwargs)
+
+class SendLogData(_AbstractGameRequest):
+    """Data to log intent, rationalize decision, note observations about universe
+    """
+    __slots__ = ['log']
+    params = {
+        strings.LOG: parsing.JsonableClassType(Log)
+    }
+
+    def __init__(self, **kwargs):
+        self.log = None
+        super(SendLogData, self).__init__(**kwargs)
 
 class SetDummyPowers(_AbstractGameRequest):
     """ Game request to set dummy powers. Require game master privileges.

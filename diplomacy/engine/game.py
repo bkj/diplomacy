@@ -33,13 +33,14 @@ import diplomacy.utils.errors as err
 from diplomacy.utils.order_results import OK, NO_CONVOY, BOUNCE, VOID, CUT, DISLODGED, DISRUPTED, DISBAND, MAYBE
 from diplomacy.engine.map import Map
 from diplomacy.engine.message import Message, GLOBAL
+from diplomacy.engine.log import Log
 from diplomacy.engine.power import Power
 from diplomacy.engine.renderer import Renderer
 from diplomacy.utils import PriorityDict, common, exceptions, parsing, strings
 from diplomacy.utils.jsonable import Jsonable
 from diplomacy.utils.sorted_dict import SortedDict
 from diplomacy.utils.constants import OrderSettings, DEFAULT_GAME_RULES
-from diplomacy.utils.game_phase_data import GamePhaseData, MESSAGES_TYPE
+from diplomacy.utils.game_phase_data import GamePhaseData, MESSAGES_TYPE, LOGS_TYPE
 
 # Constants
 UNDETERMINED, POWER, UNIT, LOCATION, COAST, ORDER, MOVE_SEP, OTHER = 0, 1, 2, 3, 4, 5, 6, 7
@@ -224,7 +225,7 @@ class Game(Jsonable):
                  'convoy_paths_dest', 'zobrist_hash', 'renderer', 'game_id', 'map_name', 'role', 'rules',
                  'message_history', 'state_history', 'result_history', 'status', 'timestamp_created', 'n_controls',
                  'deadline', 'registration_password', 'observer_level', 'controlled_powers', '_phase_wrapper_type',
-                 'phase_abbr', '_unit_owner_cache', 'daide_port', 'fixed_state']
+                 'phase_abbr', '_unit_owner_cache', 'daide_port', 'fixed_state', 'log_history','logs']
     zobrist_tables = {}
     rule_cache = ()
     model = {
@@ -236,6 +237,8 @@ class Game(Jsonable):
         strings.MAP_NAME: parsing.DefaultValueType(str, 'standard'),
         strings.MESSAGE_HISTORY: parsing.DefaultValueType(parsing.DictType(str, MESSAGES_TYPE), {}),
         strings.MESSAGES: parsing.DefaultValueType(MESSAGES_TYPE, []),
+        strings.LOG_HISTORY: parsing.DefaultValueType(parsing.DictType(str, LOGS_TYPE), {}),
+        strings.LOGS: parsing.DefaultValueType(LOGS_TYPE, []),
         strings.META_RULES: parsing.DefaultValueType(parsing.SequenceType(str), []),
         strings.N_CONTROLS: parsing.OptionalValueType(int),
         strings.NO_RULES: parsing.DefaultValueType(parsing.SequenceType(str, set), []),
@@ -281,9 +284,11 @@ class Game(Jsonable):
         self.game_id = None  # type: str
         self.map_name = None  # type: str
         self.messages = None  # type: SortedDict
+        self.logs = None  # type: SortedDict
         self.role = None  # type: str
         self.rules = []
         self.state_history, self.order_history, self.result_history, self.message_history = {}, {}, {}, {}
+        self.log_history = {}
         self.status = None  # type: str
         self.timestamp_created = None  # type: int
         self.n_controls = None
@@ -384,6 +389,9 @@ class Game(Jsonable):
         self.result_history = SortedDict(self._phase_wrapper_type, dict,
                                          {self._phase_wrapper_type(key): value
                                           for key, value in self.result_history.items()})
+        self.log_history = SortedDict(self._phase_wrapper_type, SortedDict,
+                                          {self._phase_wrapper_type(key): value
+                                           for key, value in self.log_history.items()})
 
     def __str__(self):
         """ Returns a string representation of the game instance """
@@ -627,6 +635,40 @@ class Game(Jsonable):
         if self.messages:
             timestamp = max(self.messages.last_key(), timestamp)
         return timestamp
+    @classmethod
+    def filter_logs(cls, logs, game_role, timestamp_from=None, timestamp_to=None):
+        """ Filter given logs based on given game role between given timestamps (bounds included).
+            See method diplomacy.utils.SortedDict.sub() about bound rules.
+
+            :param logs: a sorted dictionary of logs to filter.
+            :param game_role: game role requiring logs. Either a special power name
+                (PowerName.OBSERVER or PowerName.OMNISCIENT), a power name, or a list of power names.
+            :param timestamp_from: lower timestamp (included) for required logs.
+            :param timestamp_to: upper timestamp (included) for required logs.
+            :return: a dict of corresponding logs (empty if no corresponding logs found),
+                mapping logs timestamps to logs.
+            :type logs: diplomacy.utils.sorted_dict.SortedDict
+        """
+
+        # Observer can see global messages and system messages sent to observers.
+        if isinstance(game_role, str) and game_role == strings.OBSERVER_TYPE:
+            return {log.time_sent: log
+                    for log in logs.sub(timestamp_from, timestamp_to)
+                    if log.is_global() or log.for_observer()}
+
+        # Omniscient observer can see all messages.
+        if isinstance(game_role, str) and game_role == strings.OMNISCIENT_TYPE:
+            return {log.time_sent: log
+                    for log in logs.sub(timestamp_from, timestamp_to)}
+
+        # Power can see logs she sent
+        if isinstance(game_role, str):
+            game_role = [game_role]
+        elif not isinstance(game_role, list):
+            game_role = list(game_role)
+        return {log.time_sent: log
+                for log in logs.sub(timestamp_from, timestamp_to)
+                if log.sender in game_role}
 
     @classmethod
     def filter_messages(cls, messages, game_role, timestamp_from=None, timestamp_to=None):
@@ -696,15 +738,18 @@ class Game(Jsonable):
         states = self.state_history.sub(from_phase, to_phase)
         orders = self.order_history.sub(from_phase, to_phase)
         messages = self.message_history.sub(from_phase, to_phase)
+        logs = self.log_history.sub(from_phase, to_phase)
         results = self.result_history.sub(from_phase, to_phase)
         if game_role:
             messages = [self.filter_messages(msg_dict, game_role) for msg_dict in messages]
-        assert len(phases) == len(states) == len(orders) == len(messages) == len(results), (
-            len(phases), len(states), len(orders), len(messages), len(results))
+            logs = [self.filter_logs(log_dict, game_role) for log_dict in logs]
+        assert len(phases) == len(states) == len(orders) == len(messages) == len(results) == len(logs), (
+            len(phases), len(states), len(orders), len(messages), len(results), len(logs))
         return [GamePhaseData(name=str(phases[i]),
                               state=states[i],
                               orders=orders[i],
                               messages=messages[i],
+                              logs=logs[i],
                               results=results[i])
                 for i in range(len(phases))]
 
@@ -730,10 +775,12 @@ class Game(Jsonable):
         phase = self._phase_wrapper_type(game_phase_data.name)
         assert phase not in self.state_history
         assert phase not in self.message_history
+        assert phase not in self.log_history
         assert phase not in self.order_history
         assert phase not in self.result_history
         self.state_history.put(phase, game_phase_data.state)
         self.message_history.put(phase, game_phase_data.messages)
+        self.log_history.put(phase, game_phase_data.logs)
         self.order_history.put(phase, game_phase_data.orders)
         self.result_history.put(phase, game_phase_data.results)
 
@@ -761,6 +808,7 @@ class Game(Jsonable):
         previous_phase = self._phase_wrapper_type(self.current_short_phase)
         previous_orders = self.get_orders()
         previous_messages = self.messages.copy()
+        previous_logs = self.logs.copy()
         previous_state = self.get_state()
 
         # Finish the game.
@@ -770,8 +818,10 @@ class Game(Jsonable):
         self.clear_vote()
         self.clear_orders()
         self.messages.clear()
+        self.logs.clear()
         self.order_history.put(previous_phase, previous_orders)
         self.message_history.put(previous_phase, previous_messages)
+        self.log_history.put(previous_phase, previous_logs)
         self.state_history.put(previous_phase, previous_state)
         self.result_history.put(previous_phase, {})
 
@@ -781,11 +831,13 @@ class Game(Jsonable):
                                             state=previous_state,
                                             orders=previous_orders,
                                             messages=previous_messages,
+                                            logs=previous_logs,
                                             results={})
         current_phase_data = GamePhaseData(name=self.current_short_phase,
                                            state=self.get_state(),
                                            orders={},
                                            messages={},
+                                           logs={},
                                            results={})
 
         return previous_phase_data, current_phase_data
@@ -816,6 +868,18 @@ class Game(Jsonable):
         for power_name, controller in powers_controllers.items():
             self.get_power(power_name).update_controller(controller, timestamps[power_name])
 
+    def new_log_data(self, body, recipient="OMNISCIENT"):
+        """ Create an undated (without timestamp) log message to be sent from a power to the server.
+            Server will answer with timestamp and added to local game logs.
+
+            :param recipient: recipient "OMNISCIENT".
+            :param body: message body (string).
+            :return: a new GameMessage object.
+            :rtype: GameMessage
+        """
+        assert self.is_player_game()
+        return Log(phase=self.current_short_phase, sender=self.role, recipient=recipient, message=body)
+
     def new_power_message(self, recipient, body):
         """ Create a undated (without timestamp) power message to be sent from a power to another via server.
             Server will answer with timestamp, and message will be updated
@@ -842,6 +906,32 @@ class Game(Jsonable):
         assert self.is_player_game()
         return Message(phase=self.current_short_phase, sender=self.role, recipient=GLOBAL, message=body)
 
+    def add_log(self, log):
+        """
+        Add log to current game data.
+        Only a server game can add a message with no timestamp.
+        Game will auto-generate a timestamp for the message.
+        :param log: a Log object to add
+        :return: log timestamp
+        :rtype: int
+        """
+
+        assert isinstance(log, Log)
+        if log.time_sent is None:
+            # This instance must be a server game.
+            # Message should be a new message matching current game phase.
+            # There should not be any more recent message in message history (as we are adding a new message).
+            # We must generate a timestamp for this message.
+            assert self.is_server_game()
+            if log.phase != self.current_short_phase:
+                raise exceptions.GamePhaseException(self.current_short_phase, log.phase)
+
+            assert not self.logs or common.timestamp_microseconds() >= self.logs.last_key()
+            time.sleep(1e-6)
+            log.time_sent = common.timestamp_microseconds()
+
+        self.logs.put(log.time_sent, log)
+        return log.time_sent
     def add_message(self, message):
         """ Add message to current game data.
             Only a server game can add a message with no timestamp:
@@ -1434,6 +1524,7 @@ class Game(Jsonable):
         previous_orders = self.get_orders()
         previous_messages = self.messages.copy()
         previous_state = self.get_state()
+        previous_logs = self.logs.copy()
 
         if self.error:
             if 'IGNORE_ERRORS' not in self.rules:
@@ -1449,9 +1540,11 @@ class Game(Jsonable):
         self.clear_vote()
         self.clear_orders()
         self.messages.clear()
+        self.logs.clear()
         self.order_history.put(previous_phase, previous_orders)
         self.message_history.put(previous_phase, previous_messages)
         self.state_history.put(previous_phase, previous_state)
+        self.log_history.put(previous_phase, previous_logs)
 
         # Set empty orders for unorderable powers.
         # JAD: commenting the following if statement. This block will automatically set
@@ -1469,6 +1562,7 @@ class Game(Jsonable):
                              state=previous_state,
                              orders=previous_orders,
                              messages=previous_messages,
+                             logs=previous_logs,
                              results=self.result_history[previous_phase])
 
     def build_caches(self):
@@ -1558,6 +1652,7 @@ class Game(Jsonable):
                              state=self.get_state(),
                              orders=current_orders,
                              messages=self.messages.copy(),
+                             logs=self.logs.copy(),
                              results={})
 
     def set_phase_data(self, phase_data, clear_history=True):
@@ -1596,6 +1691,7 @@ class Game(Jsonable):
             if power_orders is not None:
                 Game.set_orders(self, power_name, power_orders)
         self.messages = current_phase_data.messages.copy()
+        self.logs = current_phase_data.logs.copy()
         # We ignore 'results' for current phase data.
 
     def get_state(self):
@@ -4518,5 +4614,6 @@ class Game(Jsonable):
         self.order_history.clear()
         self.result_history.clear()
         self.message_history.clear()
+        self.log_history.clear()
         self.clear_orders()
         self.clear_vote()

@@ -40,6 +40,7 @@ export function loadGameFromDisk() {
                 gameObject.message_history = {};
                 gameObject.order_history = {};
                 gameObject.result_history = {};
+                gameObject.log_history = {};
 
                 // Load all saved phases (expect the latest one) to history fields.
                 for (let i = 0; i < savedData.phases.length - 1; ++i) {
@@ -48,9 +49,15 @@ export function loadGameFromDisk() {
                     const phaseOrders = savedPhase.orders || {};
                     const phaseResults = savedPhase.results || {};
                     const phaseMessages = {};
+                    const phaseLogs = {};
                     if (savedPhase.messages) {
                         for (let message of savedPhase.messages) {
                             phaseMessages[message.time_sent] = message;
+                        }
+                    }
+                    if (savedPhase.logs) {
+                        for (let log of savedPhase.logs) {
+                            phaseLogs[log.time_sent] = log;
                         }
                     }
                     if (!gameState.name)
@@ -59,6 +66,7 @@ export function loadGameFromDisk() {
                     gameObject.message_history[gameState.name] = phaseMessages;
                     gameObject.order_history[gameState.name] = phaseOrders;
                     gameObject.result_history[gameState.name] = phaseResults;
+                    gameObject.log_history[gameState.name] = phaseLogs;
                 }
 
                 // Load latest phase separately and use it later to define the current game phase.
@@ -67,9 +75,15 @@ export function loadGameFromDisk() {
                 const latestPhaseOrders = latestPhase.orders || {};
                 const latestPhaseResults = latestPhase.results || {};
                 const latestPhaseMessages = {};
+                const latestPhaseLogs = {};
                 if (latestPhase.messages) {
                     for (let message of latestPhase.messages) {
                         latestPhaseMessages[message.time_sent] = message;
+                    }
+                }
+                if (latestPhase.logs) {
+                    for (let log of latestPhase.logs) {
+                        latestPhaseLogs[log.time_sent] = log;
                     }
                 }
                 if (!latestGameState.name)
@@ -78,6 +92,7 @@ export function loadGameFromDisk() {
                 gameObject.result_history[latestGameState.name] = latestPhaseResults;
 
                 gameObject.messages = [];
+                gameObject.logs = [];
                 gameObject.role = STRINGS.OBSERVER_TYPE;
                 gameObject.status = STRINGS.COMPLETED;
                 gameObject.timestamp_created = 0;
@@ -91,7 +106,8 @@ export function loadGameFromDisk() {
                     name: latestGameState.name,
                     state: latestGameState,
                     orders: latestPhaseOrders,
-                    messages: latestPhaseMessages
+                    messages: latestPhaseMessages,
+                    logs: latestPhaseLogs
                 });
                 onLoad(game);
             };

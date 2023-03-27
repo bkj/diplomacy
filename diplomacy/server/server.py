@@ -261,7 +261,7 @@ class Server:
         # Server games loaded on memory (stored on disk).
         # Saved separately (each game in one JSON file).
         # Each game also stores tokens connected (player tokens, observer tokens, omniscient tokens).
-        self.games = {}  # type: Dict[str, ServerGame]
+        self.games = {}  #type: Dict[str, ServerGame]
 
         # Dictionary mapping game ID to list of power names.
         self.games_with_dummy_powers = {}  # type: Dict[str, List[str]]

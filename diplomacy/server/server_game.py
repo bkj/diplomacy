@@ -91,11 +91,13 @@ class ServerGame(Game):
                                  state=phase_data.state,
                                  orders=phase_data.orders,
                                  results=phase_data.results,
-                                 messages=self.filter_messages(phase_data.messages, role))
+                                 messages=self.filter_messages(phase_data.messages, role),
+                                 logs=self.filter_logs(phase_data.logs, role))
         # Filter for power roles.
         related_power_names = self.get_related_power_names(role)
         # Filter messages.
         messages = self.filter_messages(phase_data.messages, related_power_names)
+        logs = self.filter_logs(phase_data.logs, related_power_names)
         # We filter orders only if phase data is for a current phase.
         if is_current:
             orders = {power_name: phase_data.orders[power_name]
@@ -109,6 +111,7 @@ class ServerGame(Game):
                              state=phase_data.state,
                              orders=orders,
                              messages=messages,
+                             logs=logs,
                              results=phase_data.results)
 
     def game_can_start(self):

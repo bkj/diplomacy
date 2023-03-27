@@ -1014,6 +1014,27 @@ def on_set_grade(server, request, connection_handler):
             if user_is_omniscient_before != user_is_omniscient_after:
                 transfer_special_tokens(server_game, server, username, grade_update, user_is_omniscient_after)
 
+def on_send_log_data(server, request, connection_handler):
+    """Manage request SendLogData
+
+    :param server: server which receives the request.
+    :param request: request to manage.
+    :param connection_handler: connection handler from which the request was sent
+    :return:
+    """
+    level = verify_request(server, request, connection_handler, omniscient_role=False, observer_role=False)
+    assert_game_not_finished(level.game)
+
+    log = request.log
+
+    if not level.game.is_game_active:
+        raise exceptions.GameNotPlayingException()
+    log.time_sent = level.game.add_log(log)
+    #Notifier(server, ignore_addresses=[(request.game_role, token)]).notify_game_message(level.game, message)
+    server.save_game(level.game)
+    return responses.DataTimeStamp(data=log.time_sent, request_id=request.request_id)
+
+
 def on_set_orders(server, request, connection_handler):
     """ Manage request SetOrders.
 
@@ -1238,6 +1259,7 @@ MAPPING = {
     requests.SetGameStatus: on_set_game_status,
     requests.SetGrade: on_set_grade,
     requests.SetOrders: on_set_orders,
+    requests.SendLogData: on_send_log_data,
     requests.SetWaitFlag: on_set_wait_flag,
     requests.SignIn: on_sign_in,
     requests.Synchronize: on_synchronize,

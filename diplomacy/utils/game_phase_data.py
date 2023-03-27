@@ -16,18 +16,20 @@
 # ==============================================================================
 """ Utility class to save all data related to one game phase (phase name, state, messages and orders). """
 from diplomacy.engine.message import Message
+from diplomacy.engine.log import Log
 from diplomacy.utils import common, strings, parsing
 from diplomacy.utils.jsonable import Jsonable
 from diplomacy.utils.sorted_dict import SortedDict
 
 MESSAGES_TYPE = parsing.IndexedSequenceType(
     parsing.DictType(int, parsing.JsonableClassType(Message), SortedDict.builder(int, Message)), 'time_sent')
-
+LOGS_TYPE = parsing.IndexedSequenceType(
+    parsing.DictType(int, parsing.JsonableClassType(Log), SortedDict.builder(int, Log)), 'time_sent')
 class GamePhaseData(Jsonable):
     """ Small class to represent data for a game phase:
         phase name, state, orders, orders results and messages for this phase.
     """
-    __slots__ = ['name', 'state', 'orders', 'results', 'messages']
+    __slots__ = ['name', 'state', 'orders', 'results', 'messages','logs']
 
     model = {
         strings.NAME: str,
@@ -35,13 +37,15 @@ class GamePhaseData(Jsonable):
         strings.ORDERS: parsing.DictType(str, parsing.OptionalValueType(parsing.SequenceType(str))),
         strings.RESULTS: parsing.DictType(str, parsing.SequenceType(parsing.StringableType(common.StringableCode))),
         strings.MESSAGES: MESSAGES_TYPE,
+        strings.LOGS: LOGS_TYPE
     }
 
-    def __init__(self, name, state, orders, results, messages):
+    def __init__(self, name, state, orders, results, messages, logs):
         """ Constructor. """
         self.name = ''
         self.state = {}
         self.orders = {}
         self.results = {}
         self.messages = {}
-        super(GamePhaseData, self).__init__(name=name, state=state, orders=orders, results=results, messages=messages)
+        self.logs = {}
+        super(GamePhaseData, self).__init__(name=name, state=state, orders=orders, results=results, messages=messages, logs=logs)

@@ -1107,7 +1107,7 @@ export class ContentGame extends React.Component {
                 }
             }
             return '';
-        };
+        }
 
         const orderView = [
             this.__form_phases(pastPhases, phaseIndex),
@@ -1147,6 +1147,47 @@ export class ContentGame extends React.Component {
         );
     }
 
+    renderLogs(engine, role) {
+        const powerLogs = engine.getLogsForPower(role, true);
+        const items = powerLogs.map((logs) =>
+            <tr>
+                <th scope="row">{logs.phase}</th>
+                <th>{logs.sender}</th>
+                <td>{logs.message}</td>
+            </tr>
+        );
+        return (
+            <table className={"table table-bordered table-hover table-sm"}>
+                <thead>
+                    <tr>
+                        <th scope="col">Phase</th>
+                        <th scope="col">Sender</th>
+                        <th scope="col">Log</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items}
+                </tbody>
+            </table>
+        );
+    }
+    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+        if (pastPhases[phaseIndex] === initialEngine.phase)
+            Diplog.info("initial phase");
+        return (
+            <div className={"row justify-content-end"} style={{maxHeight:"500px",overflow:"auto"}}>
+                <div className={"col-6"}>
+                    {pastPhases[phaseIndex] === initialEngine.phase ? (
+                        this.renderLogs(initialEngine, currentPowerName)
+                    ) : (
+                        this.renderLogs(engine, currentPowerName)
+                    )}
+
+                </div>
+            </div>
+        );
+    }
     renderTabMessages(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
 
@@ -1360,6 +1401,7 @@ export class ContentGame extends React.Component {
                         currentTabOrderCreation
                     )) || ''}
                 </Tabs>
+                {this.renderTabLogs(true, engine, currentPowerName)}
             </main>
         );
     }

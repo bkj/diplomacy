@@ -56,7 +56,7 @@ export class Game {
 
         const nonNullFields = [
             'game_id', 'map_name', 'messages', 'role', 'rules', 'status', 'timestamp_created', 'deadline',
-            'message_history', 'order_history', 'state_history'
+            'message_history', 'order_history', 'state_history', 'logs', 'log_history'
         ];
         // These fields may be null.
         const nullFields = ['n_controls', 'registration_password'];
@@ -71,6 +71,7 @@ export class Game {
         this.game_id = gameData.game_id;
         this.map_name = gameData.map_name;
         this.messages = new SortedDict(gameData instanceof Game ? null : gameData.messages, parseInt);
+        this.logs = new SortedDict(gameData instanceof Game ? null : gameData.logs, parseInt);
 
         // {short phase name => state}
         this.state_history = new SortedDict(gameData instanceof Game ? gameData.state_history.toDict() : gameData.state_history, comparablePhase);
@@ -81,6 +82,7 @@ export class Game {
         // {short phase name => {message.time_sent => message}}
         if (gameData instanceof Game) {
             this.message_history = new SortedDict(gameData.message_history.toDict(), comparablePhase);
+            this.log_history = new SortedDict(gameData.log_history.toDict(), comparablePhase);
         } else {
             this.message_history = new SortedDict(null, comparablePhase);
             for (let entry of Object.entries(gameData.message_history)) {
@@ -88,6 +90,13 @@ export class Game {
                 const phaseMessages = entry[1];
                 const sortedPhaseMessages = new SortedDict(phaseMessages, parseInt);
                 this.message_history.put(shortPhaseName, sortedPhaseMessages);
+            }
+            this.log_history = new SortedDict(null, comparablePhase);
+            for (let entry of Object.entries(gameData.log_history)) {
+                const shortPhaseName = entry[0];
+                const phaseLogs = entry[1];
+                const sortedPhaseLogs = new SortedDict(phaseLogs, parseInt);
+                this.log_history.put(shortPhaseName, sortedPhaseLogs);
             }
         }
 
@@ -199,12 +208,14 @@ export class Game {
     extendPhaseHistory(phaseData) {
         if (this.state_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in state history.`);
         if (this.message_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in message history.`);
+        if (this.log_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in log history.`);
         if (this.order_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in order history.`);
         if (this.result_history.contains(phaseData.name)) throw new Error(`Phase ${phaseData.phase} already in result history.`);
         this.state_history.put(phaseData.name, phaseData.state);
         this.order_history.put(phaseData.name, phaseData.orders);
         this.result_history.put(phaseData.name, phaseData.results);
         this.message_history.put(phaseData.name, new SortedDict(phaseData.messages, parseInt));
+        this.log_history.put(phaseData.name, new SortedDict(phaseData.logs, parseInt));
     }
 
     addMessage(message) {
@@ -319,6 +330,7 @@ export class Game {
                 this.setOrders(entry[0], entry[1]);
         }
         this.messages = phaseData.messages instanceof SortedDict ? phaseData.messages : new SortedDict(phaseData.messages, parseInt);
+        this.logs = phaseData.logs instanceof SortedDict ? phaseData.logs : new SortedDict(phaseData.logs, parseInt);
     }
 
     setState(state) {
@@ -398,12 +410,14 @@ export class Game {
                 game.state_history.remove(keyToRemove);
                 game.order_history.remove(keyToRemove);
                 game.result_history.remove(keyToRemove);
+                game.log_history.remove(keyToRemove);
             }
             game.setPhaseData({
                 name: pastPhase,
                 state: this.state_history.get(pastPhase),
                 orders: this.order_history.get(pastPhase),
-                messages: this.message_history.get(pastPhase)
+                messages: this.message_history.get(pastPhase),
+                logs: this.log_history.get(pastPhase)
             });
             return game;
         }
@@ -443,6 +457,50 @@ export class Game {
             orders[powerName] = (countOrders || power.order_is_set) ? powerOrders : null;
         }
         return orders;
+    }
+    getLogsForPower(role, all) {
+        let logList = [];
+        role = role || this.role;
+        let powerLogs = [];
+        if (all) {
+            logList = this.log_history.values();
+            if (this.logs.size() && !this.log_history.contains(this.phase))
+                logList.push(this.logs);
+        } else {
+            if (this.logs.size())
+                logList = [this.logs];
+            else if (this.log_history.contains(this.phase))
+                logList = this.log_history.get(this.phase);
+        }
+        for (let logs of logList) {
+            for (let log of logs.values()) {
+                let sender = log.sender;
+                if (sender === role)
+                    powerLogs.push(log);
+            }
+        }
+        return powerLogs;
+    }
+
+    getLogsForPowerByPhase(role, all) {
+        let logList = [];
+        role = role || this.role;
+        let powerLogs = [];
+        if (this.logs.size() && !this.log_history.contains(this.phase)) {
+            logList.push(this.logs)
+        }
+        if (this.log_history.contains(this.phase)) {
+            logList.push(this.log_history.get(this.phase));
+        }
+
+        for (let logs of logList) {
+            for (let log of logs.values()) {
+                let sender = log.sender;
+                if (sender === role)
+                    powerLogs.push(log);
+            }
+        }
+        return powerLogs;
     }
 
     getMessageChannels(role, all) {

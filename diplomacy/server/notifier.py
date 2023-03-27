@@ -321,6 +321,25 @@ class Notifier:
         yield self._notify_game(server_game, notifications.ClearedCenters, power_name=power_name)
 
     @gen.coroutine
+    def notify_log_data(self, server_game, log):
+        """Notify sender that the log data was received by sender, update data locally
+            :param server_game: Game data who handles this log data.
+            :param log: the log data received.
+            :return: None
+            :type server_game: diplomacy.server.server_game.ServerGame
+        """
+        power_from = server_game.get_power(log.sender)
+        #send notification
+        yield self._notify_power(
+            server_game.game_id, power_from, notifications.LogDataReceived, log=log)
+
+        for game_role, token in server_game.get_omniscient_addresses():
+            yield self._notify(notifications.LogDataReceived(token=token,
+                                                                 game_id=server_game.game_id,
+                                                                 game_role=game_role,
+                                                                 log=log))
+
+    @gen.coroutine
     def notify_game_message(self, server_game, game_message):
         """ Notify relevant users about a game message received.
 
@@ -330,8 +349,7 @@ class Notifier:
             :type server_game: diplomacy.server.server_game.ServerGame
         """
         if game_message.is_global():
-            if not '#LOG' in game_message.message:
-                yield self._notify_game(server_game, notifications.GameMessageReceived, message=game_message)
+            yield self._notify_game(server_game, notifications.GameMessageReceived, message=game_message)
         else:
             power_from = server_game.get_power(game_message.sender)
             power_to = server_game.get_power(game_message.recipient)
