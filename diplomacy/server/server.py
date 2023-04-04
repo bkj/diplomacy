@@ -441,6 +441,10 @@ class Server:
         if server_game.is_game_done:
             self.stop_daide_server(server_game.game_id)
 
+        # >>
+        self._backup_games_now()
+        # <<
+        
         # Game must be stopped if not active.
         return not server_game.is_game_active
 

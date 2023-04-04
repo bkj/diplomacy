@@ -23,7 +23,11 @@ NB_CONNECTION_ATTEMPTS = 12
 ATTEMPT_DELAY_SECONDS = 5
 
 # Time to wait between to server backups.
-DEFAULT_BACKUP_DELAY_SECONDS = 10 * 60  # 10 minutes.
+# <<
+# DEFAULT_BACKUP_DELAY_SECONDS = 10 * 60  # 10 minutes.
+# --
+DEFAULT_BACKUP_DELAY_SECONDS = 1 * 60  # 1 minutes - BKJ
+# >>
 
 # Default server ping interval. # Used for sockets ping.
 DEFAULT_PING_SECONDS = 30
