@@ -176,6 +176,10 @@ export class Channel {
         return this._req('send_game_message', undefined, undefined, parameters, game);
     }
 
+    sendLogData(parameters, game) {
+        return this._req('send_log_data', undefined, undefined, parameters, game);
+    }
+
     setOrders(parameters, game) {
         return this._req('set_orders', undefined, undefined, parameters, game);
     }

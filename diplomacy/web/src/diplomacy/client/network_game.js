@@ -79,6 +79,10 @@ export class NetworkGame {
         return this._req(Channel.prototype.sendGameMessage, parameters);
     }
 
+    sendLogData(parameters) {
+        return this._req(Channel.prototype.sendLogData, parameters);
+    }
+
     setOrders(parameters) {
         return this._req(Channel.prototype.setOrders, parameters);
     }
@@ -189,6 +193,10 @@ export class NetworkGame {
         this.addCallback('game_message_received', callback);
     }
 
+    addOnLogReceived(callback) {
+        this.addCallback('log_received', callback);
+    }
+
     addOnGameProcessed(callback) {
         this.addCallback('game_processed', callback);
     }
@@ -253,6 +261,10 @@ export class NetworkGame {
 
     clearOnGameMessageReceived() {
         this.clearCallbacks('game_message_received');
+    }
+
+    clearOnLogReceived() {
+        this.clearCallbacks('log_received');
     }
 
     clearOnGameProcessed() {

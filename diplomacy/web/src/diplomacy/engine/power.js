@@ -44,7 +44,13 @@ export class Power {
     }
 
     getController() {
-        return (this.controller && this.controller.lastValue()) || STRINGS.DUMMY;
+        const len = this.controller.size()
+        let res = STRINGS.DUMMY;
+        if (len > 0) {
+            res = this.controller.lastValue()
+        }
+        //return (this.controller && this.controller.lastValue()) || STRINGS.DUMMY;
+        return(res);
     }
 
     isEliminated() {

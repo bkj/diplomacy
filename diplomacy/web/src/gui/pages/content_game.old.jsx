@@ -49,21 +49,11 @@ import {SvgModern} from "../maps/modern/SvgModern";
 import {SvgPure} from "../maps/pure/SvgPure";
 import {MapData} from "../utils/map_data";
 import {Queue} from "../../diplomacy/utils/queue";
+
+
 import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-import {
-    MainContainer,
-    ChatContainer,
-    ExpansionPanel,
-    MessageList,
-    MessageSeparator,
-    MessageInput,
-    Sidebar,
-    ConversationList,
-    Conversation,
-    ConversationHeader,
-    Avatar,
-    Message as ChatMessage,
-} from '@chatscope/chat-ui-kit-react';
+import { MainContainer, ChatContainer, ExpansionPanel, MessageList, MessageSeparator, MessageInput, Sidebar, ConversationList, Conversation, Avatar } from '@chatscope/chat-ui-kit-react';
+import { Message as ChatMessage } from '@chatscope/chat-ui-kit-react';
 import AUS from '../assets/AUS.png';
 import ENG from '../assets/ENG.png';
 import FRA from '../assets/FRA.png';
@@ -133,122 +123,6 @@ function noPromise() {
     return new Promise(resolve => resolve());
 }
 
-/*class CaptainsLog extends React.Component {
-    constructor (props) {
-        super(props);
-
-        this.state = {
-            logData: "",
-            logs: this.props.logs
-        }
-        
-        this.sendLogData = this.sendLogData.bind(this);
-        this.captainsLogInfo = this.captainsLogInfo.bind(this)
-    }
-
-    setLogData = (logData) => {
-        this.setState({logData: logData})
-    }
-
-    setLogs = (logs) => {
-        this.setState({logs: logs})
-    }
-
-    sendLogData(body) {
-        const engine = this.props.networkGame.local;
-        const message = new Message({
-            phase: engine.phase,
-            sender: engine.role,
-            recipient: "OMNISCIENT",
-            message: body
-        });
-        this.props.networkGame.sendLogData({log: message})
-            .then(() => {
-                this.props.page.load(
-                    `game: ${engine.game_id}`,
-                    <ContentGame data={engine}/>,
-                    {success: `Log sent: ${JSON.stringify(message)}`}
-                );
-            })
-            .catch(error => {
-                this.page && this.page.error(error.toString())
-            });
-
-        return message
-    }
-
-    captainsLogInfo () {
-        if (this.state.logs && this.state.logs.length > 0) {
-            return ""
-        }
-        
-        return "No log messages to show for this phase"
-    }
-
-    renderLogs (logs) {
-        let renderedLogs = []
-        let curPhase = "";
-        let prevPhase = "";
-        for (let i in logs) {
-            let log = logs[i];
-            if (log.phase !== prevPhase) {
-                curPhase = log.phase
-                renderedLogs.push(
-                    <MessageSeparator>
-                        {log.phase}
-                    </MessageSeparator>
-                );
-                prevPhase = curPhase;
-            }
-
-            renderedLogs.push(
-                <ChatMessage
-                    key={`log-message-${i}`}
-                    model={{
-                        message: log.message,
-                        sent: log.sent_time,
-                        sender: this.props.role,
-                        direction: "outgoing",
-                        position: "single"
-                    }}
-                />
-            );
-        }
-
-        return renderedLogs
-    }
-
-    render = () => {
-        return (
-            (this.props.page && this.props.networkGame && this.props.role) && (
-                <MainContainer>
-                    <ChatContainer id={"captains-chat"}>
-                        <ConversationHeader>
-                            <ConversationHeader.Content
-                                userName="Captain's Log"
-                                info={this.captainsLogInfo()}
-                            />
-                        </ConversationHeader>
-                        <MessageList>
-                            {this.renderLogs(this.state.logs)}
-                        </MessageList>
-                        {this.props.showChatInput && (
-                            <MessageInput 
-                                attachButton={false}
-                                onChange={val => this.setLogData(val)}
-                                onSend={() =>  {
-                                    const message = this.sendLogData(this.state.logData)
-                                    this.setLogs([...this.state.logs, message])
-                                }}
-                            />
-                        )}
-                    </ChatContainer>
-                </MainContainer>
-            )
-        )
-    }
-}*/
-
 export class ContentGame extends React.Component {
 
     constructor(props) {
@@ -290,8 +164,7 @@ export class ContentGame extends React.Component {
             orderBuildingType: null,
             orderBuildingPath: [],
             showAbbreviations: true,
-            message: "",
-            logData: ""
+            val: ""
         };
 
         // Bind some class methods to this instance.
@@ -304,7 +177,6 @@ export class ContentGame extends React.Component {
         this.notifiedLocalStateChange = this.notifiedLocalStateChange.bind(this);
         this.notifiedNetworkGame = this.notifiedNetworkGame.bind(this);
         this.notifiedNewGameMessage = this.notifiedNewGameMessage.bind(this);
-        // this.notifiedNewLog = this.notifiedNewLog.bind(this);
         this.notifiedPowersControllers = this.notifiedPowersControllers.bind(this);
         this.onChangeCurrentPower = this.onChangeCurrentPower.bind(this);
         this.onChangeMainTab = this.onChangeMainTab.bind(this);
@@ -329,7 +201,6 @@ export class ContentGame extends React.Component {
         this.reloadServerOrders = this.reloadServerOrders.bind(this);
         this.renderOrders = this.renderOrders.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
-        this.sendLogData = this.sendLogData.bind(this);
         this.setOrders = this.setOrders.bind(this);
         this.setSelectedLocation = this.setSelectedLocation.bind(this);
         this.setSelectedVia = this.setSelectedVia.bind(this);
@@ -583,8 +454,6 @@ export class ContentGame extends React.Component {
                     return this.notifiedPowersControllers(networkGame, notification);
                 case 'game_message_received':
                     return this.notifiedNewGameMessage(networkGame, notification);
-                case 'log_received':
-                    return this.notifiedNewGameMessage(networkGame, notification);
                 case 'game_processed':
                 case 'game_phase_update':
                     return this.notifiedGamePhaseUpdated(networkGame, notification);
@@ -613,7 +482,6 @@ export class ContentGame extends React.Component {
             networkGame.addOnPowerOrdersFlag(collector);
             networkGame.addOnPowersControllers(collector);
             networkGame.addOnGameMessageReceived(collector);
-            networkGame.addOnLogReceived(collector);
             networkGame.addOnGameProcessed(collector);
             networkGame.addOnGamePhaseUpdate(collector);
             networkGame.addOnGameStatusUpdate(collector);
@@ -647,11 +515,7 @@ export class ContentGame extends React.Component {
     }
 
     setMessageInputValue(val) {
-        return this.setState({message: val});
-    }
-
-    setlogDataInputValue(val) {
-        return this.setState({logData: val});
+        return this.setState({val: val});
     }
 
     sendMessage(networkGame, recipient, body) {
@@ -672,28 +536,6 @@ export class ContentGame extends React.Component {
                 );
             })
             .catch(error => page.error(error.toString()));
-    }
-
-    sendLogData(networkGame, body) {
-        const engine = networkGame.local;
-        const message = new Message({
-            phase: engine.phase,
-            sender: engine.role,
-            recipient: "OMNISCIENT",
-            message: body
-        });
-        const page = this.getPage();
-        networkGame.sendLogData({log: message})
-            .then(() => {
-                page.load(
-                    `game: ${engine.game_id}`,
-                    <ContentGame data={engine}/>,
-                    {success: `Log sent: ${JSON.stringify(message)}`}
-                );
-            })
-            .catch(error => {
-                page.error(error.toString())
-            });
     }
 
     onProcessGame() {
@@ -1067,6 +909,103 @@ export class ContentGame extends React.Component {
         return render;
     }
 
+    renderPastMessages2(engine, role) {
+        const messageChannels = engine.getMessageChannels(role, true);
+        const tabNames = [];
+        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
+            tabNames.push(powerName);
+        tabNames.sort();
+        tabNames.push('GLOBAL');
+        const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
+        const currentTabId = this.state.tabPastMessages || tabNames[0];
+
+        const convList = tabNames.map((protagonist) =>
+            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
+                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size = "sm" />
+            </Conversation>
+        );
+
+        const powerLogs = engine.getLogsForPower(role, true);
+        const renderedLogs = powerLogs.map((log) =>
+            // eslint-disable-next-line react/jsx-key
+            <ChatMessage model={{
+                message: log.message,
+                sent: log.sent_time,
+                sender: role,
+                direction: "outgoing",
+                position: "single"
+            }}>
+            </ChatMessage>
+        );
+
+        const renderedMessages = [];
+        let protagonist = currentTabId;
+
+        let msgs = messageChannels[protagonist];
+        let sender = "";
+        let rec = "";
+        let dir = "";
+        let curPhase = "";
+        let prevPhase = "";
+        let toggleSep = true;
+
+        for (let m in msgs) {
+            let msg = msgs[m];
+            sender = msg.sender;
+            rec = msg.recipient;
+            curPhase = msg.phase;
+            if (curPhase !== prevPhase) {
+                renderedMessages.push(
+                    <MessageSeparator>
+                        {curPhase}
+                    </MessageSeparator>
+                );
+                prevPhase = curPhase;
+            }
+
+            if (role === sender)
+                dir = "outgoing";
+            if (role === rec)
+                dir = "incoming";
+            renderedMessages.push(
+                <ChatMessage model={{
+                    message: msg.message,
+                    sent: msg.sent_time,
+                    sender: sender,
+                    direction: dir,
+                    position: "single"
+                }} avatarPosition={(dir === 'outgoing' ? 'tr':'tl')}>
+                    <Avatar src = {POWER_ICONS[sender]} name={sender} size="sm" />
+                </ChatMessage>
+            );
+        }
+        return(
+                <div style={{height:"400px"}}>
+                    <MainContainer responsive>
+                        <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
+                            <ConversationList>
+                                {convList}
+                            </ConversationList>
+                        </Sidebar>
+                        <ChatContainer>
+                            <MessageList>
+                                {renderedMessages}
+                            </MessageList>
+                        </ChatContainer>
+
+                        <Sidebar position="right">
+                            <ExpansionPanel title="Captain's Log">
+                                <MessageList>
+                                    {renderedLogs}
+                                </MessageList>
+                            </ExpansionPanel>
+                        </Sidebar>
+
+                    </MainContainer>
+                </div>
+        );
+    }
+
     renderPastMessages(engine, role) {
         const messageChannels = engine.getMessageChannels(role, true);
         const tabNames = [];
@@ -1076,55 +1015,58 @@ export class ContentGame extends React.Component {
         tabNames.push('GLOBAL');
         const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
         const currentTabId = this.state.tabPastMessages || tabNames[0];
-        const curController = engine.powers[role].getController()
-        // const highlights = this.state.messageHighlights;
 
+        return (
+            <div className={'panel-messages'} key={'panel-messages'}>
+                {/* Messages. */}
+                <Tabs menu={tabNames} titles={titles} onChange={this.onChangeTabPastMessages} active={currentTabId}>
+                    {tabNames.map(protagonist => (
+                        <Tab key={protagonist} className={'game-messages'} display={currentTabId === protagonist}>
+                            {(!messageChannels.hasOwnProperty(protagonist) || !messageChannels[protagonist].length ?
+                                    (<div className={'no-game-message'}>No
+                                        messages{engine.isPlayerGame() ? ` with ${protagonist}` : ''}.</div>) :
+                                    messageChannels[protagonist].map((message, index) => (
+                                        <MessageView key={index} phase={engine.phase} owner={role} message={message}
+                                                     read={true}/>
+                                    ))
+                            )}
+                        </Tab>
+                    ))}
+                </Tabs>
+            </div>
+        );
+    }
+
+    renderCurrentMessages2(engine, role) {
+        const messageChannels = engine.getMessageChannels(role, true);
+        const tabNames = [];
+        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
+            tabNames.push(powerName);
+        tabNames.sort();
+        tabNames.push('GLOBAL');
+        const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
+        const currentTabId = this.state.tabCurrentMessages || tabNames[0];
+        const highlights = this.state.messageHighlights;
 
         const convList = tabNames.map((protagonist) =>
-            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
-                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size = "sm" />
+            <Conversation className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
+                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" />
             </Conversation>
         );
 
+        //const powerLogs = engine.getLogsForPowerAtPhase(role, true);
         const powerLogs = engine.getLogsForPower(role, true);
-        let renderedLogs = []
-        let curPhase = ""
-        let prevPhase = ""
-        powerLogs.forEach((log) => {
-            if (log.phase != prevPhase) {
-                curPhase = log.phase
-                renderedLogs.push(
-                    <MessageSeparator>
-                        {curPhase}
-                    </MessageSeparator>
-                )
-
-                prevPhase = curPhase
-            }
-
-            renderedLogs.push(
-                // eslint-disable-next-line react/jsx-key
-                <ChatMessage model={{
-                    message: log.message,
-                    sent: log.sent_time,
-                    sender: role,
-                    direction: "outgoing",
-                    position: "single"
-                }}>
-                </ChatMessage>
-            )
-        })
-        // const renderedLogs = powerLogs.map((log) =>
-        //     // eslint-disable-next-line react/jsx-key
-        //     <ChatMessage model={{
-        //         message: log.message,
-        //         sent: log.sent_time,
-        //         sender: role,
-        //         direction: "outgoing",
-        //         position: "single"
-        //     }}>
-        //     </ChatMessage>
-        // );
+        const renderedLogs = powerLogs.map((log) =>
+            // eslint-disable-next-line react/jsx-key
+            <ChatMessage model={{
+                message: log.message,
+                sent: log.sent_time,
+                sender: role,
+                direction: "outgoing",
+                position: "single"
+            }}>
+            </ChatMessage>
+        );
 
         const renderedMessages = [];
         let protagonist = currentTabId;
@@ -1133,8 +1075,8 @@ export class ContentGame extends React.Component {
         let sender = "";
         let rec = "";
         let dir = "";
-        curPhase = "";
-        prevPhase = "";
+        let curPhase = "";
+        let prevPhase = "";
         let toggleSep = true;
 
         for (let m in msgs) {
@@ -1168,212 +1110,11 @@ export class ContentGame extends React.Component {
             );
         }
 
-        return(
-            <Row>
-                <div className={"col-6"} style={{height:"500px"}}>
-                    <MainContainer responsive>
-                            <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
-                                <ConversationList>
-                                    {convList}
-                                </ConversationList>
-                            </Sidebar>
-                            <ChatContainer>
-                                <MessageList>
-                                    {renderedMessages}
-                                </MessageList>
-                            </ChatContainer>
-                    </MainContainer>
-                </div>
-                <div className={"col"} style={{height:"500px"}}>
-                    <ChatContainer>
-                        <ConversationHeader>
-                            <ConversationHeader.Content
-                                userName = {role.toString() + " (" + curController + ")" + ": Captain's Log"}
-                                info={powerLogs.length ? "" : "No log messages to show"}
-                            />
-                        </ConversationHeader>
-                        <MessageList>
-                            {renderedLogs}
-                        </MessageList>
-                    </ChatContainer>
-                    {/* <CaptainsLog
-                            page={this.getPage()}
-                            networkGame={engine.client}
-                            role={currentTabId}
-                            logs={powerLogs}
-                            showChatInput={engine.isPlayerGame() || (currentTabId == STRINGS.OMNISCIENT)}
-                /> */}
-                </div>
-            </Row>
-        );
-    }
-
-    // renderPastMessages_Deprecated(engine, role) {
-    //     const messageChannels = engine.getMessageChannels(role, true);
-    //     const tabNames = [];
-    //     for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
-    //         tabNames.push(powerName);
-    //     tabNames.sort();
-    //     tabNames.push('GLOBAL');
-    //     const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
-    //     const currentTabId = this.state.tabPastMessages || tabNames[0];
-
-    //     return (
-    //         <div className={'panel-messages'} key={'panel-messages'}>
-    //             {/* Messages. */}
-    //             <Tabs menu={tabNames} titles={titles} onChange={this.onChangeTabPastMessages} active={currentTabId}>
-    //                 {tabNames.map(protagonist => (
-    //                     <Tab
-    //                         key={protagonist}
-    //                         className={'game-messages'}
-    //                         display={currentTabId === protagonist}
-    //                     >
-    //                         {(!messageChannels.hasOwnProperty(protagonist) || !messageChannels[protagonist].length ?
-    //                                 (<div className={'no-game-message'}>No
-    //                                     messages{engine.isPlayerGame() ? ` with ${protagonist}` : ''}.</div>) :
-    //                                 messageChannels[protagonist].map((message, index) => (
-    //                                     <MessageView key={index} phase={engine.phase} owner={role} message={message}
-    //                                                  read={true}/>
-    //                                 ))
-    //                         )}
-    //                     </Tab>
-    //                 ))}
-    //             </Tabs>
-    //         </div>
-    //     );
-    // }
-
-    renderCurrentLogs(engine, role) {
-        const powerLogs = engine.getLogsForPower(role, true);
-        const renderedLogs = powerLogs.map((log) =>
-            // eslint-disable-next-line react/jsx-key
-            <ChatMessage model={{
-                message: log.message,
-                sent: log.sent_time,
-                sender: role,
-                direction: "outgoing",
-                position: "single"
-            }}/>
-
-        );
-
         return (
-            <MainContainer>
-                <ChatContainer>
-                    <ConversationHeader>
-                        <ConversationHeader.Content
-                            userName='Captains log'
-                            info={powerLogs.length ? "" : "No log messages to show"}
-                        />
-                    </ConversationHeader>
-                    <MessageList>
-                        {renderedLogs}
-                    </MessageList>
-                </ChatContainer>
-            </MainContainer>
-        );
-    }
 
-    renderCurrentMessages(engine, role) {
-        const messageChannels = engine.getMessageChannels(role, true);
-        const tabNames = [];
-        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
-            tabNames.push(powerName);
-        tabNames.sort();
-        tabNames.push('GLOBAL');
-        // const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
-        const currentTabId = this.state.tabCurrentMessages || tabNames[0];
-        const curController = engine.powers[role].getController()
-        // const highlights = this.state.messageHighlights;
-
-
-        const convList = tabNames.map((protagonist) =>
-            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
-                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" />
-            </Conversation>
-        );
-
-        //const powerLogs = engine.getLogsForPowerAtPhase(role, true);
-        const powerLogs = engine.getLogsForPower(role, true);
-        let renderedLogs = []
-        let curPhase = ""
-        let prevPhase = ""
-        powerLogs.forEach((log) => {
-            if (log.phase != prevPhase) {
-                curPhase = log.phase
-                renderedLogs.push(
-                    <MessageSeparator>
-                        {curPhase}
-                    </MessageSeparator>
-                )
-
-                prevPhase = curPhase
-            }
-
-            renderedLogs.push(
-                // eslint-disable-next-line react/jsx-key
-                <ChatMessage model={{
-                    message: log.message,
-                    sent: log.sent_time,
-                    sender: role,
-                    direction: "outgoing",
-                    position: "single"
-                }}>
-                </ChatMessage>
-            )
-        })
-
-        const renderedMessages = [];
-        let protagonist = currentTabId;
-
-        let msgs = messageChannels[protagonist];
-        let sender = "";
-        let rec = "";
-        let dir = "";
-        curPhase = "";
-        prevPhase = "";
-        let toggleSep = true;
-
-        for (let m in msgs) {
-            let msg = msgs[m];
-            sender = msg.sender;
-            rec = msg.recipient;
-            curPhase = msg.phase;
-            if (curPhase !== prevPhase) {
-                renderedMessages.push(
-                    <MessageSeparator key={msg.phase}>
-                        {curPhase}
-                    </MessageSeparator>
-                );
-                prevPhase = curPhase;
-            }
-
-            if (role === sender)
-                dir = "outgoing";
-            if (role === rec)
-                dir = "incoming";
-            renderedMessages.push(
-                <ChatMessage
-                    model={{
-                        message: msg.message,
-                        sent: msg.sent_time,
-                        sender: sender,
-                        direction: dir,
-                        position: "single"
-                    }} 
-                    avatarPosition={(dir === 'outgoing' ? 'tr':'tl')}
-                    key={`${sender}-${rec}-${m}`}
-                >
-                    <Avatar src = {POWER_ICONS[sender]} name={sender} size="sm" />
-                </ChatMessage>
-            );
-        }
-
-        return (
-            <Row>
-                <div className={"col-6"} style={{height:"500px"}}>
+                <div style={{height:"400px"}}>
                     <MainContainer responsive>
-                        <Sidebar position="left" scrollable={true}>
+                        <Sidebar style={{maxWidth: "200px" }} position="left" scrollable={false}>
                             <ConversationList>
                                 {convList}
                             </ConversationList>
@@ -1382,112 +1123,81 @@ export class ContentGame extends React.Component {
                             <MessageList>
                                 {renderedMessages}
                             </MessageList>
-                            {engine.isPlayerGame() && (
-                                <MessageInput
-                                    attachButton={false}
-                                    onChange={val => this.setMessageInputValue(val)}
-                                    onSend={() =>  {
-                                        this.sendMessage(
-                                            engine.client,
-                                            currentTabId,
-                                            this.state.message
-                                        )
-                                    }}
-                                />
-                            )}
-                        </ChatContainer>
-                    </MainContainer>
-                </div>
-                <div className={"col"} style={{height:"500px"}}>
-                    <MainContainer responsive>
-                        <ChatContainer>
-                            <ConversationHeader>
-                                <ConversationHeader.Content
-                                    userName={role.toString() + " (" + curController + ")" + ": Captain's Log"}
-                                />
-                            </ConversationHeader>
-                            <MessageList>
-                                {renderedLogs}
-                            </MessageList>
-                            {engine.isPlayerGame() && (
-                                <MessageInput
-                                    attachButton={false}
-                                    onChange={val => this.setlogDataInputValue(val)}
-                                    onSend={() =>  {
-                                        const message = this.sendLogData(engine.client, this.state.logData)
-                                        //this.setLogs([...this.state.logs, message])
-                                    }}
-                                />
-                            )}
-                        </ChatContainer>
-                    </MainContainer>
 
-                    {/*<CaptainsLog
-                        page={this.getPage()}
-                        networkGame={engine.client}
-                        role={role}
-                        logs={powerLogs}
-                        showChatInput={engine.isPlayerGame() || engine.isOmniscientGame() }
-                    />*/}
+                            {engine.isPlayerGame() && (
+                            <MessageInput attachButton={false}
+                                          onChange={val => this.setMessageInputValue(val)}
+                                          onSend={() =>  this.sendMessage(engine.client, currentTabId, this.state.val)}
+                            />)}
+                        </ChatContainer>
+
+                        <Sidebar position="right">
+                            <ExpansionPanel title="Captain's Log">
+                                <MessageList>
+                                    {renderedLogs}
+                                </MessageList>
+                            </ExpansionPanel>
+                        </Sidebar>
+                    </MainContainer>
                 </div>
-            </Row>
+
         );
     }
-    // renderCurrentMessages_Deprecated(engine, role) {
-    //     const messageChannels = engine.getMessageChannels(role, true);
-    //     const tabNames = [];
-    //     for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
-    //         tabNames.push(powerName);
-    //     tabNames.sort();
-    //     tabNames.push('GLOBAL');
-    //     const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
-    //     const currentTabId = this.state.tabCurrentMessages || tabNames[0];
-    //     const highlights = this.state.messageHighlights;
-    //     const unreadMarked = new Set();
+    renderCurrentMessages(engine, role) {
+        const messageChannels = engine.getMessageChannels(role, true);
+        const tabNames = [];
+        for (let powerName of Object.keys(engine.powers)) if (powerName !== role)
+            tabNames.push(powerName);
+        tabNames.sort();
+        tabNames.push('GLOBAL');
+        const titles = tabNames.map(tabName => (tabName === 'GLOBAL' ? tabName : tabName.substr(0, 3)));
+        const currentTabId = this.state.tabCurrentMessages || tabNames[0];
+        const highlights = this.state.messageHighlights;
+        const unreadMarked = new Set();
 
-    //     return (
-    //         <div className={'panel-messages'} key={'panel-messages'}>
-    //             {/* Messages. */}
-    //             <Tabs menu={tabNames} titles={titles} onChange={this.onChangeTabCurrentMessages} active={currentTabId}
-    //                   highlights={highlights}>
-    //                 {tabNames.map(protagonist => (
-    //                     <Tab key={protagonist} className={'game-messages'} display={currentTabId === protagonist}
-    //                          id={`panel-current-messages-${protagonist}`}>
-    //                         {(!messageChannels.hasOwnProperty(protagonist) || !messageChannels[protagonist].length ?
-    //                                 (<div className={'no-game-message'}>No
-    //                                     messages{engine.isPlayerGame() ? ` with ${protagonist}` : ''}.</div>) :
-    //                                 (messageChannels[protagonist].map((message, index) => {
-    //                                     let id = null;
-    //                                     if (!message.read && !unreadMarked.has(protagonist)) {
-    //                                         if (engine.isOmniscientGame() || message.sender !== role) {
-    //                                             unreadMarked.add(protagonist);
-    //                                             id = `${protagonist}-unread`;
-    //                                         }
-    //                                     }
-    //                                     return <MessageView key={index} phase={engine.phase} owner={role}
-    //                                                         message={message}
-    //                                                         read={message.phase !== engine.phase}
-    //                                                         id={id} onClick={this.onClickMessage}/>;
-    //                                 }))
-    //                         )}
-    //                     </Tab>
-    //                 ))}
-    //             </Tabs>
-    //             {/* Link to go to first unread received message. */}
-    //             {unreadMarked.has(currentTabId) && (
-    //                 <Scrollchor className={'link-unread-message'}
-    //                             to={`${currentTabId}-unread`}
-    //                             target={`panel-current-messages-${currentTabId}`}>
-    //                     Go to 1st unread message
-    //                 </Scrollchor>
-    //             )}
-    //             {/* Send form. */}
-    //             {engine.isPlayerGame() && (
-    //                 <MessageForm sender={role} recipient={currentTabId} onSubmit={form =>
-    //                     this.sendMessage(engine.client, currentTabId, form.message)}/>)}
-    //         </div>
-    //     );
-    // }
+        return (
+            <div className={'panel-messages'} key={'panel-messages'}>
+                {/* Messages. */}
+                <Tabs menu={tabNames} titles={titles} onChange={this.onChangeTabCurrentMessages} active={currentTabId}
+                      highlights={highlights}>
+                    {tabNames.map(protagonist => (
+                        <Tab key={protagonist} className={'game-messages'} display={currentTabId === protagonist}
+                             id={`panel-current-messages-${protagonist}`}>
+                            {(!messageChannels.hasOwnProperty(protagonist) || !messageChannels[protagonist].length ?
+                                    (<div className={'no-game-message'}>No
+                                        messages{engine.isPlayerGame() ? ` with ${protagonist}` : ''}.</div>) :
+                                    (messageChannels[protagonist].map((message, index) => {
+                                        let id = null;
+                                        if (!message.read && !unreadMarked.has(protagonist)) {
+                                            if (engine.isOmniscientGame() || message.sender !== role) {
+                                                unreadMarked.add(protagonist);
+                                                id = `${protagonist}-unread`;
+                                            }
+                                        }
+                                        return <MessageView key={index} phase={engine.phase} owner={role}
+                                                            message={message}
+                                                            read={message.phase !== engine.phase}
+                                                            id={id} onClick={this.onClickMessage}/>;
+                                    }))
+                            )}
+                        </Tab>
+                    ))}
+                </Tabs>
+                {/* Link to go to first unread received message. */}
+                {unreadMarked.has(currentTabId) && (
+                    <Scrollchor className={'link-unread-message'}
+                                to={`${currentTabId}-unread`}
+                                target={`panel-current-messages-${currentTabId}`}>
+                        Go to 1st unread message
+                    </Scrollchor>
+                )}
+                {/* Send form. */}
+                {engine.isPlayerGame() && (
+                    <MessageForm sender={role} recipient={currentTabId} onSubmit={form =>
+                        this.sendMessage(engine.client, currentTabId, form.message)}/>)}
+            </div>
+        );
+    }
 
     renderMapForResults(gameEngine, showOrders) {
         const Map = getMapComponent(gameEngine.map_name);
@@ -1568,7 +1278,7 @@ export class ContentGame extends React.Component {
 
     __form_phases(pastPhases, phaseIndex) {
         return (
-            <form key={1} className="form-inline">
+            <form key={1} className="form-inline mb-4">
                 <div className="custom-control-inline">
                     <Button title={UTILS.html.UNICODE_LEFT_ARROW} onClick={this.onDecrementPastPhase} pickEvent={true}
                             disabled={phaseIndex === 0}/>
@@ -1628,10 +1338,10 @@ export class ContentGame extends React.Component {
                 }
             }
             return '';
-        }
+        };
 
         const orderView = [
-            //this.__form_phases(pastPhases, phaseIndex),
+            this.__form_phases(pastPhases, phaseIndex),
             (((countOrders && (
                     <div key={2} className={'past-orders container'}>
                         {powerNames.map(powerName => !orders[powerName] || !orders[powerName].length ? '' : (
@@ -1668,30 +1378,28 @@ export class ContentGame extends React.Component {
         );
     }
 
-    // renderLogs(engine, role) {
-    //     const powerLogs = engine.getLogsForPower(role, true);
-    //     const items = powerLogs.map((logs) =>
-    //         // eslint-disable-next-line react/jsx-key
-    //         <Row>
-    //             <div className="message-content col-md">
-    //                 {logs.message}
-    //             </div>
-    //         </Row>
-    //     );
-    //     return (items);
-    // }
-
-    // renderTabLogs(toDisplay, initialEngine, currentPowerName) {
-    //     const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
-    //     if (pastPhases[phaseIndex] === initialEngine.phase)
-    //         Diplog.info("initial phase");
-    //     return (
-    //         <Row>
-    //             {this.renderLogs(engine, currentPowerName)}
-    //         </Row>
-    //     );
-    // }
-
+    renderLogs(engine, role) {
+        const powerLogs = engine.getLogsForPower(role, true);
+        const items = powerLogs.map((logs) =>
+            // eslint-disable-next-line react/jsx-key
+            <Row>
+                <div className="message-content col-md">
+                    {logs.message}
+                </div>
+            </Row>
+        );
+        return (items);
+    }
+    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
+        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
+        if (pastPhases[phaseIndex] === initialEngine.phase)
+            Diplog.info("initial phase");
+        return (
+            <Row>
+                {this.renderLogs(engine, currentPowerName)}
+            </Row>
+        );
+    }
 
     renderTabMessages(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
@@ -1699,13 +1407,13 @@ export class ContentGame extends React.Component {
         return (
             <Tab id={'tab-phase-history'} display={toDisplay}>
                 <Row>
-                    <div className={'col-xl'} >
+                    <div className={'col-xl'}>
                         {this.state.historyCurrentOrders && (
                             <div className={'history-current-orders'}>{this.state.historyCurrentOrders.join(', ')}</div>
                         )}
                         {this.renderMapForMessages(engine, this.state.historyShowOrders)}
                     </div>
-                    <div className={"col-xl"}>
+                    <div className={'col-xl'}>
                         {this.__form_phases(pastPhases, phaseIndex)}
                         {pastPhases[phaseIndex] === initialEngine.phase ? (
                             this.renderCurrentMessages(initialEngine, currentPowerName)
@@ -1722,19 +1430,21 @@ export class ContentGame extends React.Component {
         );
     }
 
+
+
     renderTabCurrentPhase(toDisplay, engine, powerName, orderType, orderPath, currentPowerName, currentTabOrderCreation) {
         const powerNames = Object.keys(engine.powers);
         powerNames.sort();
         const orderedPowers = powerNames.map(pn => engine.powers[pn]);
         return (
             <Tab id={'tab-current-phase'} display={toDisplay}>
-                <Row >
-                    <div className={'col-6'} >
+                <Row>
+                    <div className={'col-xl'}>
                         {this.renderMapForCurrent(engine, powerName, orderType, orderPath)}
                     </div>
-                    <div className={'col'} >
+                    <div className={'col-xl'}>
                         {/* Orders. */}
-                        <div className={'panel-orders mb-4'} style={{maxHeight:'500px', overflowY:"scroll"}}>
+                        <div className={'panel-orders mb-4'}>
                             {currentTabOrderCreation ? <div className="mb-4">{currentTabOrderCreation}</div> : ''}
                             <PowerOrdersActionBar
                                 onReset={this.reloadServerOrders}
@@ -1758,40 +1468,21 @@ export class ContentGame extends React.Component {
         );
     }
 
-    renderMainPanel(toDisplay, initialEngine, currentPowerName, hasTabPhaseHistory, hasTabCurrentPhase, orderBuildingType, orderBuildingPath, currentTabOrderCreation) {
+    renderTabChat(toDisplay, initialEngine, currentPowerName) {
         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
 
-    }
-
-    renderTabLogs(toDisplay, initialEngine, currentPowerName) {
-        const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
         return (
-            <div>
+            <div className={'col-xl'}>
+                {this.__form_phases(pastPhases, phaseIndex)}
                 {pastPhases[phaseIndex] === initialEngine.phase ? (
-                    this.renderCurrentLogs(initialEngine, currentPowerName)
+                    this.renderCurrentMessages2(initialEngine, currentPowerName)
                 ) : (
-                    <p>"HEY THERE!</p>
+                    this.renderPastMessages2(engine, currentPowerName)
                 )}
             </div>
         );
+
     }
-
-     renderTabChat(toDisplay, initialEngine, currentPowerName) {
-         const {engine, pastPhases, phaseIndex} = this.__get_engine_to_display(initialEngine);
-
-         return (
-             <div>
-                 {pastPhases[phaseIndex] === initialEngine.phase ? (
-                     this.renderCurrentMessages(initialEngine, currentPowerName)
-                 ) : (
-                     this.renderPastMessages(engine, currentPowerName)
-                 )}
-             </div>
-         );
-
-     }
-
-
     // ]
 
     // [ React.Component overridden methods.
@@ -1883,7 +1574,6 @@ export class ContentGame extends React.Component {
                     <label className="custom-control-label" htmlFor="show-abbreviations">Show abbreviations</label>
                 </div>
             </form>
-
         );
 
         const currentTabOrderCreation = hasTabCurrentPhase && (
@@ -1917,48 +1607,20 @@ export class ContentGame extends React.Component {
             </div>
         );
 
-        const {engineCur, pastPhases, phaseIndex} = this.__get_engine_to_display(engine);
-        let phasePanel;
-        if (pastPhases[phaseIndex] === engine.phase) {
-            if (hasTabCurrentPhase) {
-                phasePanel = this.renderTabCurrentPhase(
-                    true,
-                    engine,
-                    currentPowerName,
-                    orderBuildingType,
-                    this.state.orderBuildingPath,
-                    currentPowerName,
-                    currentTabOrderCreation
-                );
-            } else if (hasTabPhaseHistory) {
-                phasePanel = this.renderTabResults(true, engine);
-            }
-        } else {
-            phasePanel = this.renderTabResults(true, engine);
-        }
-
         return (
             <main>
                 <Helmet>
                     <title>{title} | Diplomacy</title>
                 </Helmet>
-                <Navigation 
-                    title={title}
-                    afterTitle={navAfterTitle}
-                    username={page.channel.username}
-                    phaseSel={this.__form_phases(pastPhases, phaseIndex)}
-                    navigation={navigation}
-                />
-                {/*<Tabs
-                    menu={tabNames}
-                    titles={tabTitles}
-                    onChange={this.onChangeMainTab}
-                    active={mainTab}
-                >
-                     Tab Phase history.
+                <Navigation title={title}
+                            afterTitle={navAfterTitle}
+                            username={page.channel.username}
+                            navigation={navigation}/>
+                <Tabs menu={tabNames} titles={tabTitles} onChange={this.onChangeMainTab} active={mainTab}>
+                    {/* Tab Phase history. */}
                     {(hasTabPhaseHistory && mainTab === 'phase_history' && this.renderTabResults(mainTab === 'phase_history', engine)) || ''}
                     {mainTab === 'messages' && this.renderTabMessages(mainTab === 'messages', engine, currentPowerName)}
-                     Tab Current phase.
+                    {/* Tab Current phase. */}
                     {(mainTab === 'current_phase' && hasTabCurrentPhase && this.renderTabCurrentPhase(
                         mainTab === 'current_phase',
                         engine,
@@ -1968,13 +1630,8 @@ export class ContentGame extends React.Component {
                         currentPowerName,
                         currentTabOrderCreation
                     )) || ''}
-
-                </Tabs>*/}
-                {/*{mainTab === 'messages' && this.renderTabLogs(mainTab === 'messages', engine, currentPowerName)}*/}
-                {/*{mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)}*/}
-
-                {phasePanel}
-                {this.renderTabChat(true, engine, currentPowerName)}
+                </Tabs>
+                {mainTab === 'messages' && this.renderTabChat(mainTab === 'messages', engine, currentPowerName)}
 
             </main>
         );
