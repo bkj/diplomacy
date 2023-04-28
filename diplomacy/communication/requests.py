@@ -383,9 +383,11 @@ class JoinGame(_AbstractChannelRequest):
             user wants to observe game without playing.
         :param registration_password: password to join game. If omitted while
             game requires a password, server will return an error.
+        :param player_type: one of either 'human', 'no_press_bot', 'press_bot'
         :type game_id: str
         :type power_name: str, optional
         :type registration_password: str, optional
+        :type player_type: str, optional
         :return:
 
             - Server: :class:`.DataGame`
@@ -403,17 +405,19 @@ class JoinGame(_AbstractChannelRequest):
                 If he does have up to game master privileges, then he can also send requests that
                 require game master privileges.
     """
-    __slots__ = ['game_id', 'power_name', 'registration_password']
+    __slots__ = ['game_id', 'power_name', 'registration_password', 'player_type']
     params = {
         strings.GAME_ID: str,
         strings.POWER_NAME: parsing.OptionalValueType(str),
-        strings.REGISTRATION_PASSWORD: parsing.OptionalValueType(str)
+        strings.REGISTRATION_PASSWORD: parsing.OptionalValueType(str),
+        strings.PLAYER_TYPE:  parsing.OptionalValueType(parsing.EnumerationType(strings.ALL_PLAYER_TYPES))
     }
 
     def __init__(self, **kwargs):
         self.game_id = None
         self.power_name = None
         self.registration_password = None
+        self.player_type = None
         super(JoinGame, self).__init__(**kwargs)
 
 class JoinPowers(_AbstractChannelRequest):

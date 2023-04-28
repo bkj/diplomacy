@@ -9,6 +9,10 @@ from diplomacy.utils import strings
 
 POWERS = ['AUSTRIA', 'ENGLAND', 'FRANCE', 'GERMANY', 'ITALY', 'RUSSIA', 'TURKEY']
 STATUS = [strings.BUSY, strings.READY, strings.INACTIVE]
+TYPES = [strings.HUMAN, strings.NO_PRESS_BOT, strings.PRESS_BOT]
+
+def test_callback(network_game, notification):
+    print("CALLBACK FIRED")
 
 async def create_game(game_id, hostname='localhost', port=8432):
     """ Creates a game on the server """
@@ -25,10 +29,17 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
     # Waiting for the game, then joining it
     while not (await channel.list_games(game_id=game_id)):
         await asyncio.sleep(1.)
-    game = await channel.join_game(game_id=game_id, power_name=power_name)
+
+    type = TYPES[randint(0,3)]
+    print(power_name + " type = " + type)
+    game = await channel.join_game(game_id=game_id, power_name=power_name, player_type=type)
+    game.add_on_game_processed(test_callback)
 
     submit_log = False
     submit_message = False
+
+    while not game.is_game_active:
+        await asyncio.sleep(1)
 
     # Playing game
     while not game.is_game_done:

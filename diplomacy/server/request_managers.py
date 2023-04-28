@@ -374,6 +374,7 @@ def on_join_game(server, request, connection_handler):
     # Check request token.
     verify_request(server, request, connection_handler)
     token, power_name, registration_password = request.token, request.power_name, request.registration_password
+    player_type = request.player_type
 
     # Get related game.
     server_game = server.get_game(request.game_id)  # type: ServerGame
@@ -515,7 +516,7 @@ def on_join_game(server, request, connection_handler):
                 power_name = server_game.get_random_power_name()
 
             # Register sender token as power token.
-            server_game.control(power_name, username, token)
+            server_game.control(power_name, username, token, player_type)
 
             # Notify other game tokens about new powers controllers.
             Notifier(server, ignore_addresses=[(power_name, token)]).notify_game_powers_controllers(server_game)
