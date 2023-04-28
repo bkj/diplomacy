@@ -5,8 +5,10 @@ from diplomacy.utils import exceptions
 from diplomacy_research.players import RuleBasedPlayer
 from diplomacy_research.players.rulesets import dumbbot_ruleset
 from random import *
+from diplomacy.utils import strings
 
 POWERS = ['AUSTRIA', 'ENGLAND', 'FRANCE', 'GERMANY', 'ITALY', 'RUSSIA', 'TURKEY']
+STATUS = [strings.BUSY, strings.READY, strings.INACTIVE]
 
 async def create_game(game_id, hostname='localhost', port=8432):
     """ Creates a game on the server """
@@ -27,9 +29,15 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
 
     submit_log = False
     submit_message = False
+
     # Playing game
     while not game.is_game_done:
         current_phase = game.get_current_phase()
+
+        statuses = {}
+        for power in game.powers.values():
+            statuses[power.name] = power.comm_status
+        print("{}\t{}\t{}".format(current_phase, power_name, statuses))
 
         #log data
         if randint(1,100) > 50:
@@ -43,10 +51,25 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
             await game.send_game_message(message=game.new_power_message(recipient, msg))
             await asyncio.sleep(2)
 
+        comm_status = STATUS[randint(0,2)]
+        await game.set_comm_status(comm_status=comm_status)
+        await asyncio.sleep(1)
+        print("{}\t{}\t{}".format(current_phase, power_name, comm_status))
+
+
+
         # Submitting orders
         orders = await bot.get_orders(game, power_name)
         print("{}\t{}\t{}".format(current_phase, power_name, orders))
         await game.set_orders(power_name=power_name, orders=orders, wait=False)
+
+        p = game.get_power(power_name)
+        stat = p.comm_status
+        statuses = {}
+        for power in game.powers.values():
+            statuses[power.name] = power.comm_status
+        print("{}\t{}\t{}".format(current_phase, power_name, statuses))
+
 
         # Waiting for game to be processed
         while current_phase == game.get_current_phase():
@@ -54,6 +77,9 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
 
         if current_phase == "F1903M":
             print("HEY")
+
+
+
 
     # A local copy of the game can be saved with to_saved_game_format
     # To download a copy of the game with messages from all powers, you need to export the game as an admin
@@ -64,8 +90,8 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
 
 async def launch(game_id):
     """ Creates and plays a network game """
-    game_id = "test1"
-    #await create_game(game_id)
+    #game_id = "test1"
+    await create_game(game_id)
     await asyncio.gather(*[play(game_id, power_name) for power_name in POWERS])
 
 if __name__ == '__main__':

@@ -188,6 +188,7 @@ class Power(Jsonable):
             else:
                 self.order_is_set = OrderSettings.ORDER_NOT_SET
                 self.wait = True if self.is_dummy() else (not self.game.real_time)
+                self.comm_status = strings.BUSY
         self.goner = 0
 
     @staticmethod

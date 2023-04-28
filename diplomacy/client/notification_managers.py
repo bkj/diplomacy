@@ -218,7 +218,6 @@ def on_power_comm_status_update(game, notification):
         :type notification: diplomacy.communication.notifications.PowerCommStatusUpdate
     """
     Game.set_comm_status(game, notification.power_name, notification.comm_status)
-    print("HEY")
 
 def on_power_wait_flag(game, notification):
     """ Manage notification PowerWaitFlag.
