@@ -749,6 +749,8 @@ class SetGameState(_AbstractGameRequest):
         self.messages = {}  # type: SortedDict
         super(SetGameState, self).__init__(**kwargs)
 
+
+
 class SetGameStatus(_AbstractGameRequest):
     """ Game request to force game status (only if new status differs from previous one).
         Require game master privileges.
@@ -796,6 +798,26 @@ class SetOrders(_AbstractGameRequest):
         self.orders = None
         self.wait = None
         super(SetOrders, self).__init__(**kwargs)
+
+class SetCommStatus(_AbstractGameRequest):
+    """ Game request to toggle a players communication status
+        :param power_name. If not given, request user must be a game player, and power if inferred from request game role
+        :param commStatus: one of ['busy', 'ready']
+        :type power_name str
+        :type commStatus str
+        return none
+    """
+    __slots__ = ['power_name', 'commStatus']
+    params = {
+        strings.POWER_NAME: parsing.OptionalValueType(str),  # required only for game master.
+        strings.STATUS: parsing.EnumerationType(strings.ALL_COMM_STATUSES),
+    }
+
+    def __init__(self, **kwargs):
+        self.power_name = None
+        self.commStatus = None
+
+        super(SetCommStatus, self).__init__(**kwargs)
 
 class SetWaitFlag(_AbstractGameRequest):
     """ Game request to set orders for a power.
