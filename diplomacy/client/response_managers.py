@@ -276,6 +276,22 @@ def on_set_orders(context, response):
     else:
         Game.set_orders(context.game, request.power_name, orders)
 
+def on_set_comm_status(context, response):
+    """ Manage response for request SetCommStatus
+        :param context: request context
+        :param response: response received
+        :return: None
+        :type context: RequestFutureContext
+    """
+    request = context.request
+    comm_status = request.comm_status
+
+    if Game.is_player_game(context.game):
+        assert context.game.power.name == context.request.game_role
+        Game.set_comm_status(context.game, request.game_role, comm_status)
+    else:
+        Game.set_comm_status(context.game, request.power_name, comm_status)
+
 def on_set_wait_flag(context, response):
     """ Manage response for request SetWaitFlag.
 
@@ -351,6 +367,7 @@ MAPPING = {
     requests.SignIn: on_sign_in,
     requests.Synchronize: default_manager,
     requests.Vote: on_vote,
+    requests.SetCommStatus: on_set_comm_status
 }
 
 def handle_response(context, response):
