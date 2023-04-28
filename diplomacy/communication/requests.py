@@ -802,7 +802,7 @@ class SetOrders(_AbstractGameRequest):
 class SetCommStatus(_AbstractGameRequest):
     """ Game request to toggle a players communication status
         :param power_name. If not given, request user must be a game player, and power if inferred from request game role
-        :param commStatus: one of ['busy', 'ready']
+        :param commStatus: one of ['busy', 'ready','inactive']
         :type power_name str
         :type commStatus str
         return none

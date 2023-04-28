@@ -1066,6 +1066,19 @@ def on_set_orders(server, request, connection_handler):
         server.force_game_processing(level.game)
     server.save_game(level.game)
 
+def on_set_comm_status(server, request, connection_handler):
+    """ Manage request SetCommStatus
+        :param server: server which receives the request.
+        :param request: request to manage.
+        :param connection_handler: connection handler from which the request was sent.
+        :return: None
+        :type server: diplomacy.Server
+        :type request: diplomacy.communication.requests.SetCommStatus
+    """
+    level = verify_request(server, request, connection_handler, observer_role=False, require_power=True)
+    assert_game_not_finished(level.game)
+    level.game.set_comm_status(level.power_name, request.comm_status)
+
 def on_set_wait_flag(server, request, connection_handler):
     """ Manage request SetWaitFlag.
 
@@ -1265,6 +1278,7 @@ MAPPING = {
     requests.Synchronize: on_synchronize,
     requests.UnknownToken: on_unknown_token,
     requests.Vote: on_vote,
+    requests.SetCommStatus: on_set_comm_status
 }
 
 def handle_request(server, request, connection_handler):

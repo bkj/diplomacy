@@ -27,6 +27,7 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
         await asyncio.sleep(1.)
     game = await channel.join_game(game_id=game_id, power_name=power_name)
     game.set_comm_status(comm_status=strings.BUSY)
+    print("HEY")
 
 async def launch(game_id):
     """ Creates and plays a network game """

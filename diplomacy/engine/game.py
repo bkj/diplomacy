@@ -1344,6 +1344,22 @@ class Game(Jsonable):
                               if self.get_orders(power.name)
                               else OrderSettings.ORDER_SET_EMPTY)
 
+    def set_comm_status(self, power_name, comm_status):
+        """Set the comm_status for a player
+            :param power_name: name of power to update comm_status
+            :param comm_status: comm status (enum, strings.[BUSY, READY, INACTIVE])
+        """
+
+        if not self.is_fixed_state_unchanged(log_error=False):
+            return
+        power_name = power_name.upper()
+
+        if not self.has_power(power_name):
+            return
+
+        power = self.get_power(power_name.upper())
+        power.comm_status = comm_status
+
     def set_wait(self, power_name, wait):
         """ Set wait flag for a power.
 
