@@ -210,6 +210,16 @@ def on_power_vote_updated(game, notification):
     assert Game.is_player_game(game)
     game.power.vote = notification.vote
 
+def on_power_comm_status_update(game, notification):
+    """ Manage notification PowerCommStatusUpdate
+        :param game: a Network game
+        :param notification: notification received
+        :type game: diplomacy.client.network_game.NetworkGame
+        :type notification: diplomacy.communication.notifications.PowerCommStatusUpdate
+    """
+    Game.set_comm_status(game, notification.power_name, notification.comm_status)
+    print("HEY")
+
 def on_power_wait_flag(game, notification):
     """ Manage notification PowerWaitFlag.
 
@@ -260,6 +270,7 @@ MAPPING = {
     notifications.PowerWaitFlag: on_power_wait_flag,
     notifications.VoteCountUpdated: on_vote_count_updated,
     notifications.VoteUpdated: on_vote_updated,
+    notifications.PowerCommStatusUpdate: on_power_comm_status_update
 }
 
 def handle_notification(connection, notification):

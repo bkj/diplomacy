@@ -27,9 +27,6 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
         await asyncio.sleep(1.)
     game = await channel.join_game(game_id=game_id, power_name=power_name)
 
-
-
-
     while not game.is_game_done:
         current_phase = game.get_current_phase()
 
@@ -44,8 +41,8 @@ async def launch(game_id):
     """ Creates and plays a network game """
     game_id = "test21"
     print("GAME: " + game_id)
-    #await create_game(game_id)
-    await play(game_id, power_name="AUSTRIA")
+    await create_game(game_id)
+    await play(game_id, power_name="GERMANY")
     #await asyncio.gather(*[play(game_id, power_name) for power_name in POWERS])
 
 if __name__ == '__main__':

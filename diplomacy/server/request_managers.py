@@ -1079,6 +1079,13 @@ def on_set_comm_status(server, request, connection_handler):
     assert_game_not_finished(level.game)
     level.game.set_comm_status(level.power_name, request.comm_status)
 
+    # Notify other power tokens.
+    Notifier(server, ignore_addresses=[request.address_in_game]).notify_power_comm_status(
+        level.game, level.game.get_power(level.power_name), request.comm_status)
+
+    server.save_game(level.game)
+
+
 def on_set_wait_flag(server, request, connection_handler):
     """ Manage request SetWaitFlag.
 

@@ -298,6 +298,22 @@ class PowerOrdersFlag(_GameNotification):
         self.order_is_set = 0
         super(PowerOrdersFlag, self).__init__(**kwargs)
 
+class PowerCommStatusUpdate(_GameNotification):
+    """ Notification about a powers comm status update.
+
+        Properties:
+
+            -**status**: :class:`str`. One of 'busy', 'ready', 'inactive'
+    """
+    __slots__ = ['comm_status']
+    params = {
+        strings.COMM_STATUS: parsing.EnumerationType(strings.ALL_COMM_STATUSES),
+    }
+
+    def __init__(self, **kwargs):
+        self.comm_status = None
+        super(PowerCommStatusUpdate, self).__init__(**kwargs)
+
 class PowerWaitFlag(_GameNotification):
     """ Notification about a power wait flag update.
 
