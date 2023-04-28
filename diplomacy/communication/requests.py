@@ -807,15 +807,15 @@ class SetCommStatus(_AbstractGameRequest):
         :type commStatus str
         return none
     """
-    __slots__ = ['power_name', 'commStatus']
+    __slots__ = ['power_name', 'comm_status']
     params = {
         strings.POWER_NAME: parsing.OptionalValueType(str),  # required only for game master.
-        strings.STATUS: parsing.EnumerationType(strings.ALL_COMM_STATUSES),
+        strings.COMM_STATUS: parsing.EnumerationType(strings.ALL_COMM_STATUSES),
     }
 
     def __init__(self, **kwargs):
         self.power_name = None
-        self.commStatus = None
+        self.comm_status = None
 
         super(SetCommStatus, self).__init__(**kwargs)
 

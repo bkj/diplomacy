@@ -161,6 +161,7 @@ class Channel:
     _send_game_message = _req_fn(requests.SendGameMessage)
     _set_orders = _req_fn(requests.SetOrders)
     _send_log_data = _req_fn(requests.SendLogData)
+    _set_comm_status = _req_fn(requests.SetCommStatus)
 
     _clear_centers = _req_fn(requests.ClearCenters)
     _clear_orders = _req_fn(requests.ClearOrders)
