@@ -291,7 +291,9 @@ export class ContentGame extends React.Component {
             orderBuildingPath: [],
             showAbbreviations: true,
             message: "",
-            logData: ""
+            logData: "",
+            gloss: false,
+            glossMessage: '',
         };
 
         // Bind some class methods to this instance.
@@ -1429,6 +1431,18 @@ export class ContentGame extends React.Component {
                         logs={powerLogs}
                         showChatInput={engine.isPlayerGame() || engine.isOmniscientGame() }
                     />*/}
+                    <MessageForm
+                        glossed={false}
+                        sender={role}
+                        recipient={currentTabId}
+                        powers={engine.powers}
+                        senderMoves = {engine.getOrderTypeToLocs(role)}
+                        recipientMoves = {engine.getOrderTypeToLocs(currentTabId)}
+                        engine = {engine}
+                        onSubmit={(form) => {
+                            this.sendMessage(engine.client, currentTabId, form.negotiation, form.message, form.daide, form.gloss);
+                        }}
+                    />
                 </div>
             </Row>
         );

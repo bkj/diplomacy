@@ -5,9 +5,11 @@
   "private": true,
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^1.10.1",
+    "@mui/material": "^5.12.3",
     "@primer/octicons-react": "^9.1.1",
     "bootstrap": "^4.3.1",
     "jquery": "^3.4.1",
+    "lodash": "^4.17.21",
     "popper.js": "^1.15.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
