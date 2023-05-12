@@ -46,13 +46,27 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
     game.add_on_game_processed(on_game_processed)
     game.add_on_game_message_received(on_message_received)
 
+    temp = {}
+    for p in game.powers.values():
+        temp[p.name] = [p.player_type, p.comm_status]
 
-    while not game.is_game_active:
-        await asyncio.sleep(1)
+    print(power_name)
+    print(temp)
+
+    allPlayersJoined = False
+    while game.is_game_active == False & allPlayersJoined == False:
+
+        #all player_type must be not strings.NONE to proceed
+        playerTypes = [pow.player_type for pow in game.powers.values()]
+        if strings.NONE not in playerTypes:
+            allPlayersJoined = True
+            print("{}: everyone is ready!".format(power_name))
+
+        await asyncio.sleep(0.1)
 
     # Playing game
     while not game.is_game_done:
-        beginNeg = False
+        beginNeg = True
         current_phase = game.get_current_phase()
 
         #simulate a delay for pinging model
@@ -79,7 +93,7 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
             await asyncio.sleep(2)
 
         #DIPLOMACY
-        diplomacy = True
+        diplomacy = False
         dipTime = 10
         t1 = time.time()
         while diplomacy:
@@ -108,9 +122,6 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
         while current_phase == game.get_current_phase():
             await asyncio.sleep(0.1)
 
-
-
-
     # A local copy of the game can be saved with to_saved_game_format
     # To download a copy of the game with messages from all powers, you need to export the game as an admin
     # by logging in as 'admin' / 'password'
@@ -120,8 +131,8 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
 
 async def launch(game_id):
     """ Creates and plays a network game """
-    #game_id = "test1"
     await create_game(game_id)
+    #await play(game_id, "FRANCE")
     await asyncio.gather(*[play(game_id, power_name) for power_name in POWERS])
 
 if __name__ == '__main__':

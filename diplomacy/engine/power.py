@@ -81,7 +81,7 @@ class Power(Jsonable):
         strings.VOTE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_VOTE_DECISIONS), strings.NEUTRAL),
         strings.WAIT: parsing.DefaultValueType(bool, True),
         strings.COMM_STATUS: parsing.DefaultValueType(str, strings.INACTIVE),
-        strings.PLAYER_TYPE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_PLAYER_TYPES), strings.HUMAN)
+        strings.PLAYER_TYPE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_PLAYER_TYPES), strings.NONE)
     }
 
     def __init__(self, game=None, name=None, **kwargs):
@@ -101,7 +101,7 @@ class Power(Jsonable):
         self.order_is_set = 0
         self.wait = False
         self.comm_status = strings.INACTIVE
-        self.player_type = strings.HUMAN
+        self.player_type = strings.NONE
         self.tokens = set()
         super(Power, self).__init__(name=name, **kwargs)
         assert self.role in strings.ALL_ROLE_TYPES or self.role == self.name
