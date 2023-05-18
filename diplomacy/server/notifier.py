@@ -180,7 +180,9 @@ class Notifier:
         """
         yield self._notify_game(server_game, notifications.PowersControllers,
                                 powers=server_game.get_controllers(),
-                                timestamps=server_game.get_controllers_timestamps())
+                                timestamps=server_game.get_controllers_timestamps(),
+                                player_types=server_game.get_player_types()
+                                )
 
     @gen.coroutine
     def notify_game_status(self, server_game):

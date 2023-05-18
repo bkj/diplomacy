@@ -74,6 +74,7 @@ export const REQUESTS = {
         set_game_status: {level: STRINGS.GAME, model: {status: null}},
         set_orders: {level: STRINGS.GAME, model: {power_name: null, orders: null}},
         set_wait_flag: {level: STRINGS.GAME, model: {power_name: null, wait: null}},
+        set_comm_status: {level: STRINGS.GAME, model: {power_name: null, comm_status: null}},
         synchronize: {level: STRINGS.GAME, phase_dependent: false, model: {timestamp: null}},
         vote: {level: STRINGS.GAME, model: {vote: null}},
         save_game: {level: STRINGS.GAME, model: {}},

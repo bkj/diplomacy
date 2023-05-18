@@ -92,7 +92,7 @@ def on_powers_controllers(game, notification):
         game.channel.game_id_to_instances[game.game_id].remove(game.power.name)
     else:
         # In any other case, update powers controllers.
-        Game.update_powers_controllers(game, notification.powers, notification.timestamps)
+        Game.update_powers_controllers(game, notification.powers, notification.timestamps, notification.player_types)
 
 def on_game_deleted(game, notification):
     """ Manage notification GameDeleted.

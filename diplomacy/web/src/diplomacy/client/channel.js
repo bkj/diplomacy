@@ -180,6 +180,10 @@ export class Channel {
         return this._req('send_log_data', undefined, undefined, parameters, game);
     }
 
+    setCommStatus(parameters, game) {
+        return this._req('set_comm_status', undefined, undefined, parameters, game)
+    }
+
     setOrders(parameters, game) {
         return this._req('set_orders', undefined, undefined, parameters, game);
     }

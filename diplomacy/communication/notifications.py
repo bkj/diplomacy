@@ -164,12 +164,14 @@ class PowersControllers(_GameNotification):
             - **powers**: A :class:`Dict` that maps a power_name to a controller_name :class:`str`.
             - **timestamps**: A :class:`Dict` that maps a power_name to timestamp where the controller took over.
     """
-    __slots__ = ['powers', 'timestamps']
+    __slots__ = ['powers', 'timestamps', 'player_types']
     params = {
         # {power_name => controller_name}
         strings.POWERS: parsing.DictType(str, parsing.OptionalValueType(str)),
         # {power_name => controller timestamp}
-        strings.TIMESTAMPS: parsing.DictType(str, int)
+        strings.TIMESTAMPS: parsing.DictType(str, int),
+        # {power_name => player_types}
+        strings.PLAYER_TYPES: parsing.DictType(str, str)
     }
 
     def __init__(self, **kwargs):

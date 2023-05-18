@@ -95,7 +95,6 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
                 print("({}/{}): everyone is ready to communicate".format(current_phase, power_name))
             await asyncio.sleep(4)
 
-
         #LOGGING
         if random() > 0.5:
             msg = current_phase + "\t" + "LOG CHECK from " + power_name
@@ -143,7 +142,7 @@ async def launch(game_id):
     """ Creates and plays a network game """
     game_id = "t12"
     #await create_game(game_id)
-    await play(game_id, "AUSTRIA", hostname="localhost")
+    await play(game_id, "FRANCE", hostname="localhost")
     #await asyncio.gather(*[play(game_id, power_name, hostname="shade-dev.tacc.utexas.edu") for power_name in POWERS])
 
 if __name__ == '__main__':

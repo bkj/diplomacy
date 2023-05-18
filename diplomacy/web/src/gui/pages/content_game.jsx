@@ -62,6 +62,7 @@ import {
     Conversation,
     ConversationHeader,
     Avatar,
+    Button as ChatButton,
     Message as ChatMessage,
 } from '@chatscope/chat-ui-kit-react';
 import AUS from '../assets/AUS.png';
@@ -72,6 +73,7 @@ import ITA from '../assets/ITA.png';
 import RUS from '../assets/RUS.png';
 import TUR from '../assets/TUR.png';
 import GLOBAL from '../assets/GLOBAL.png';
+import {Forms} from "../components/forms";
 
 const POWER_ICONS = {
     AUSTRIA: AUS,
@@ -106,7 +108,8 @@ const TABLE_POWER_VIEW = {
     name: ['Power', 0],
     controller: ['Controller', 1],
     order_is_set: ['With orders', 2],
-    wait: ['Waiting', 3]
+    wait: ['Waiting', 3],
+    comm_status: ['Comm. Status', 4]
 };
 
 const PRETTY_ROLES = {
@@ -334,6 +337,7 @@ export class ContentGame extends React.Component {
         this.setSelectedLocation = this.setSelectedLocation.bind(this);
         this.setSelectedVia = this.setSelectedVia.bind(this);
         this.setWaitFlag = this.setWaitFlag.bind(this);
+        this.setCommStatus = this.setCommStatus.bind(this);
         this.vote = this.vote.bind(this);
         this.updateDeadlineTimer = this.updateDeadlineTimer.bind(this);
     }
@@ -363,6 +367,14 @@ export class ContentGame extends React.Component {
             wait[powerName] = engine.powers[powerName].wait;
         }
         return wait;
+    }
+
+    static getCommStatuses(engine) {
+        const commStatus = {};
+        const controllablePowers = engine.getControllablePowers();
+        for (let powerName of controllablePowers) {
+            commStatus[powerName] = engine.powers[powerName].comm_status;
+        }
     }
 
     static getOrderBuilding(powerName, orderType, orderPath) {
@@ -961,6 +973,23 @@ export class ContentGame extends React.Component {
             });
     }
 
+    setCommStatus(commStatus) {
+        let newCommStatus = commStatus===STRINGS.BUSY ? STRINGS.READY:STRINGS.BUSY
+        const engine = this.props.data;
+        const networkGame = engine.client;
+        const controllablePowers = engine.getControllablePowers();
+        const currentPowerName = this.state.power || (controllablePowers.length ? controllablePowers[0] : null);
+        if (!currentPowerName)
+            throw new Error(`Internal error: unable to detect current selected power name.`);
+        networkGame.setCommStatus({comm_status: newCommStatus, power_name: currentPowerName})
+            .then(() => {
+                this.forceUpdate(() => this.getPage().success(`Comm. status set to ${newCommStatus} for ${currentPowerName}`));
+            })
+            .catch(error => {
+                Diplog.error(error.stack);
+                this.getPage().error(`Error while setting comm. status for ${currentPowerName}: ${error.toString()}`);
+            });
+    }
     setWaitFlag(waitFlag) {
         const engine = this.props.data;
         const networkGame = engine.client;
@@ -1289,7 +1318,7 @@ export class ContentGame extends React.Component {
 
         const convList = tabNames.map((protagonist) =>
             <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
-                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" />
+                <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" status={protagonist!=='GLOBAL' ? (engine.powers[protagonist].getCommStatus()===STRINGS.READY ? "available":"dnd"):"invisible"} />
             </Conversation>
         );
 
@@ -1722,10 +1751,14 @@ export class ContentGame extends React.Component {
         );
     }
 
-    renderTabCurrentPhase(toDisplay, engine, powerName, orderType, orderPath, currentPowerName, currentTabOrderCreation) {
+
+
+    renderTabCurrentPhase(toDisplay, engine, powerName, orderType, orderPath, currentPowerName, currentTabOrderCreation, renderCommStatusForm) {
         const powerNames = Object.keys(engine.powers);
         powerNames.sort();
         const orderedPowers = powerNames.map(pn => engine.powers[pn]);
+
+
         return (
             <Tab id={'tab-current-phase'} display={toDisplay}>
                 <Row >
@@ -1733,6 +1766,7 @@ export class ContentGame extends React.Component {
                         {this.renderMapForCurrent(engine, powerName, orderType, orderPath)}
                     </div>
                     <div className={'col'} >
+                        {renderCommStatusForm}
                         {/* Orders. */}
                         <div className={'panel-orders mb-4'} style={{maxHeight:'500px', overflowY:"scroll"}}>
                             {currentTabOrderCreation ? <div className="mb-4">{currentTabOrderCreation}</div> : ''}
@@ -1886,6 +1920,22 @@ export class ContentGame extends React.Component {
 
         );
 
+        const renderCommStatusForm = hasTabCurrentPhase && (
+            <div>
+                <div><strong key={'title'} className='mr-4'>Toggle comm. status: </strong></div>
+                <form className={'form-inline power-actions-form'}>
+                    {Forms.createButton(
+                        (currentPower.comm_status===STRINGS.READY ? 'ready' : 'busy'),
+                        () => this.setCommStatus(currentPower.comm_status),
+                        (currentPower.comm_status===STRINGS.READY ? 'success' : 'danger')
+                    )}
+
+                </form>
+
+            </div>
+        );
+
+
         const currentTabOrderCreation = hasTabCurrentPhase && (
             <div>
                 <PowerOrderCreationForm orderType={orderBuildingType}
@@ -1928,7 +1978,8 @@ export class ContentGame extends React.Component {
                     orderBuildingType,
                     this.state.orderBuildingPath,
                     currentPowerName,
-                    currentTabOrderCreation
+                    currentTabOrderCreation,
+                    renderCommStatusForm
                 );
             } else if (hasTabPhaseHistory) {
                 phasePanel = this.renderTabResults(true, engine);

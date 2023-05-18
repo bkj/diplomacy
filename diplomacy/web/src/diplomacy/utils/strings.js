@@ -36,6 +36,8 @@ export const STRINGS = {
     PHASE: 'phase',
     PROMOTE: 'promote',
     STATE: 'state',
+    BUSY: 'busy',
+    READY: 'ready',
     STATE_HISTORY: 'state_history',
     SYNCHRONIZE: 'synchronize',
     ALL_GAME_STATUSES: ['forming', 'active', 'paused', 'completed', 'canceled'],

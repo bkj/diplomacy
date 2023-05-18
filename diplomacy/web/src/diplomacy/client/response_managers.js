@@ -109,6 +109,13 @@ export const RESPONSE_MANAGERS = {
         else
             context.game.local.setWait(context.request.power_name, wait);
     },
+    set_comm_status: function (context, response) {
+        const commStatus = context.request.comm_status;
+        if (context.game.local.isPlayerGame(context.request.game_role))
+            context.game.local.setCommStatus(context.request.game_role, commStatus);
+        else
+            context.game.local.setCommStatus(context.request.power_name, commStatus);
+    },
     vote: function (context, response) {
         context.game.local.getRelatedPower().vote = context.request.vote;
     },

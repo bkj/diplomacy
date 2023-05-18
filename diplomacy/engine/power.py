@@ -80,7 +80,7 @@ class Power(Jsonable):
         strings.UNITS: parsing.DefaultValueType(parsing.SequenceType(str), []),
         strings.VOTE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_VOTE_DECISIONS), strings.NEUTRAL),
         strings.WAIT: parsing.DefaultValueType(bool, True),
-        strings.COMM_STATUS: parsing.DefaultValueType(str, strings.INACTIVE),
+        strings.COMM_STATUS: parsing.DefaultValueType(str, strings.BUSY),
         strings.PLAYER_TYPE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_PLAYER_TYPES), strings.NONE)
     }
 
@@ -186,7 +186,7 @@ class Power(Jsonable):
             if self.is_eliminated():
                 self.order_is_set = OrderSettings.ORDER_SET_EMPTY
                 self.wait = False
-                self.comm_status = strings.INACTIVE
+                self.comm_status = strings.BUSY
             else:
                 self.order_is_set = OrderSettings.ORDER_NOT_SET
                 self.wait = True if self.is_dummy() else (not self.game.real_time)
@@ -220,7 +220,7 @@ class Power(Jsonable):
         self.game = game
         self.order_is_set = OrderSettings.ORDER_NOT_SET
         self.wait = True if self.is_dummy() else (not self.game.real_time)
-        self.comm_status = strings.INACTIVE
+        self.comm_status = strings.BUSY
 
         # Get power abbreviation.
         self.abbrev = self.game.map.abbrev.get(self.name, self.name[0])
@@ -387,6 +387,13 @@ class Power(Jsonable):
     def get_controller(self):
         """ (Network Method) Return current power controller name ('dummy' if power is not controlled). """
         return self.controller.last_value()
+
+    def get_player_type(self):
+        """(Network Method) Return current power player type"""
+        return self.player_type
+
+    def set_player_type(self, player_type):
+        self.player_type = player_type
 
     def get_controller_timestamp(self):
         """ (Network Method) Return timestamp when current controller took control of this power. """
