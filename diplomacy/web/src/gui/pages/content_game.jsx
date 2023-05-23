@@ -375,6 +375,7 @@ export class ContentGame extends React.Component {
         for (let powerName of controllablePowers) {
             commStatus[powerName] = engine.powers[powerName].comm_status;
         }
+        return commStatus;
     }
 
     static getOrderBuilding(powerName, orderType, orderPath) {
@@ -609,6 +610,7 @@ export class ContentGame extends React.Component {
                 case 'omniscient_updated':
                 case 'power_vote_updated':
                 case 'power_wait_flag':
+                case 'power_comm_status_update':
                 case 'vote_count_updated':
                 case 'vote_updated':
                     return this.notifiedNetworkGame(networkGame, notification);

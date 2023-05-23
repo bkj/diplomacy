@@ -99,7 +99,7 @@ export const NOTIFICATION_MANAGERS = {
         game.local.setWait(notification.power_name, notification.wait);
     },
     power_comm_status_update: function (game, notification) {
-        game.local.setCommStatus(notification.power_name, notification.comm_status)
+        game.local.setCommStatus(notification.power_name, notification.comm_status);
     },
     vote_count_updated: function (game, notification) {
         // Nothing currently done.
