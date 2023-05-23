@@ -8,7 +8,7 @@ from random import *
 from diplomacy.utils import strings
 import time
 
-POWERS = ['ENGLAND', 'FRANCE', 'GERMANY', 'ITALY', 'RUSSIA', 'TURKEY']
+POWERS = ['AUSTRIA','ENGLAND', 'FRANCE', 'GERMANY', 'ITALY', 'RUSSIA', 'TURKEY']
 STATUS = [strings.BUSY, strings.READY, strings.INACTIVE]
 
 async def create_game(game_id, hostname='localhost', port=8432):
@@ -55,8 +55,7 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
     print(temp)
 
     allPlayersJoined = False
-    #while game.is_game_active == False & allPlayersJoined == False:
-    while True:
+    while game.is_game_active == False & allPlayersJoined == False:
 
         #all player_type must be not strings.NONE to proceed
         playerTypes = [pow.player_type for pow in game.powers.values()]
@@ -141,10 +140,10 @@ async def play(game_id, power_name, hostname='localhost', port=8432):
 
 async def launch(game_id):
     """ Creates and plays a network game """
-    game_id = "t12"
-    #await create_game(game_id)
-    await play(game_id, "AUSTRIA", hostname="localhost")
-    #await asyncio.gather(*[play(game_id, power_name, hostname="shade-dev.tacc.utexas.edu") for power_name in POWERS])
+    game_id = "t16"
+    await create_game(game_id, hostname="shade-dev.tacc.utexas.edu")
+    #await play(game_id, "ENGLAND", hostname="localhost")
+    await asyncio.gather(*[play(game_id, power_name, hostname="shade-dev.tacc.utexas.edu") for power_name in POWERS])
 
 if __name__ == '__main__':
     asyncio.run(launch(game_id=str(randint(1, 1000))))

@@ -110,6 +110,7 @@ def on_create_game(server, request, connection_handler):
     # Check request token.
     verify_request(server, request, connection_handler)
     game_id, token, power_name, state, daide_port = request.game_id, request.token, request.power_name, request.state, request.daide_port
+    player_type = request.player_type
 
     # Check if server still accepts to create new games.
     if server.cannot_create_more_games():
@@ -161,7 +162,7 @@ def on_create_game(server, request, connection_handler):
 
     # Register game creator, as either power player or omniscient observer.
     if power_name:
-        server_game.control(power_name, username, token)
+        server_game.control(power_name, username, token, player_type)
         client_game = server_game.as_power_game(power_name)
     else:
         server_game.add_omniscient_token(token)

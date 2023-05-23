@@ -37,7 +37,8 @@ export class GameCreationWizard extends React.Component {
             registration_password: '',
 
             map: Maps[0],
-            no_press: false
+            no_press: false,
+            player_type: ''
         };
         this.backward = this.backward.bind(this);
         this.forward = this.forward.bind(this);
@@ -66,7 +67,8 @@ export class GameCreationWizard extends React.Component {
                 n_controls: this.state.n_controls,
                 deadline: this.state.deadline,
                 registration_password: this.state.registration_password || null,
-                rules: rules
+                rules: rules,
+                player_type: this.state.player_type
             });
         } else
             this.setState({panel: panelID, registration_password: ''});
