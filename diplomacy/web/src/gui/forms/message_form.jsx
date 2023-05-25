@@ -18,7 +18,7 @@ import React from 'react';
 import {ORDER_BUILDER} from "../utils/order_building";
 import PropTypes from "prop-types";
 import {Button} from "../components/button";
-import ToneToggle from '../components/ToneToggle';
+// import ToneToggle from '../components/ToneToggle';
 
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
@@ -646,7 +646,7 @@ static countries = [
                         <Typography variant="h6" align="center" gutterBottom>
                             Choose your negiotiation tone
                         </Typography>
-                        <ToneToggle onToneChange={this.onToneChange} submitted={this.state.submitted} />
+                        {/* <ToneToggle onToneChange={this.onToneChange} submitted={this.state.submitted} /> */}
                     </Box>
 
                     <Grid item container direction="row" spacing={2} justifyContent="center" style={{marginTop: '16px'}}>

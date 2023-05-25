@@ -1114,7 +1114,7 @@ export class ContentGame extends React.Component {
 
 
         const convList = tabNames.map((protagonist) =>
-            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
+            <Conversation unreadDot={true} info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null}  onClick = {()=>{this.onChangeTabPastMessages(protagonist)}} key={protagonist} name={protagonist}>
                 <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size = "sm" />
             </Conversation>
         );
@@ -1321,7 +1321,7 @@ export class ContentGame extends React.Component {
 
 
         const convList = tabNames.map((protagonist) =>
-            <Conversation info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
+            <Conversation unreadDot={true} info={protagonist!=='GLOBAL' ? engine.powers[protagonist].getController():""} className={protagonist===currentTabId ? 'cs-conversation--active':null} onClick = {()=>{this.onChangeTabCurrentMessages(protagonist)}} key={protagonist} name={protagonist}>
                 <Avatar src={POWER_ICONS[protagonist]} name={protagonist} size="sm" status={protagonist!=='GLOBAL' ? (engine.powers[protagonist].getCommStatus()===STRINGS.READY ? "available":"dnd"):"invisible"} />
             </Conversation>
         );
