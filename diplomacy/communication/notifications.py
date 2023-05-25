@@ -164,12 +164,14 @@ class PowersControllers(_GameNotification):
             - **powers**: A :class:`Dict` that maps a power_name to a controller_name :class:`str`.
             - **timestamps**: A :class:`Dict` that maps a power_name to timestamp where the controller took over.
     """
-    __slots__ = ['powers', 'timestamps']
+    __slots__ = ['powers', 'timestamps', 'player_types']
     params = {
         # {power_name => controller_name}
         strings.POWERS: parsing.DictType(str, parsing.OptionalValueType(str)),
         # {power_name => controller timestamp}
-        strings.TIMESTAMPS: parsing.DictType(str, int)
+        strings.TIMESTAMPS: parsing.DictType(str, int),
+        # {power_name => player_types}
+        strings.PLAYER_TYPES: parsing.DictType(str, str)
     }
 
     def __init__(self, **kwargs):
@@ -297,6 +299,22 @@ class PowerOrdersFlag(_GameNotification):
     def __init__(self, **kwargs):
         self.order_is_set = 0
         super(PowerOrdersFlag, self).__init__(**kwargs)
+
+class PowerCommStatusUpdate(_GameNotification):
+    """ Notification about a powers comm status update.
+
+        Properties:
+
+            -**status**: :class:`str`. One of 'busy', 'ready', 'inactive'
+    """
+    __slots__ = ['comm_status']
+    params = {
+        strings.COMM_STATUS: parsing.EnumerationType(strings.ALL_COMM_STATUSES),
+    }
+
+    def __init__(self, **kwargs):
+        self.comm_status = None
+        super(PowerCommStatusUpdate, self).__init__(**kwargs)
 
 class PowerWaitFlag(_GameNotification):
     """ Notification about a power wait flag update.

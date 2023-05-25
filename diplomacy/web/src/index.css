@@ -298,12 +298,12 @@ span.power-name {
     font-weight: bold;
 }
 
-.power-orders .title .wait, .wait, .no {
+.power-orders .title .wait, .wait, .no, .busy {
     font-weight: bold;
     color: red;
 }
 
-.power-orders .title .no-wait, .no-wait, .yes {
+.power-orders .title .no-wait, .no-wait, .yes, .ready {
     font-weight: bold;
     color: green;
 }

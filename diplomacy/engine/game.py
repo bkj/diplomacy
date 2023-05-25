@@ -608,6 +608,10 @@ class Game(Jsonable):
         """ Return a dictionary mapping each power name to its current controller name."""
         return {power.name: power.get_controller() for power in self.powers.values()}
 
+    def get_player_types(self):
+        """ Return a dictionary mapping each power name to its player_type."""
+        return {power.name: power.get_player_type() for power in self.powers.values()}
+
     def get_controllers_timestamps(self):
         """ Return a dictionary mapping each power name to its controller timestamp. """
         return {power.name: power.get_controller_timestamp() for power in self.powers.values()}
@@ -857,16 +861,18 @@ class Game(Jsonable):
             if self.has_power(dummy_power_name):
                 self.set_controlled(dummy_power_name, None)
 
-    def update_powers_controllers(self, powers_controllers, timestamps):
+    def update_powers_controllers(self, powers_controllers, timestamps, player_types):
         """ Update powers controllers.
 
             :param powers_controllers: a dictionary mapping a power name to a controller name.
             :param timestamps: a dictionary mapping a power name to timestamp when related controller
                 (in powers_controllers) was associated to power.
+            :param player_types: a dictionary mapping a power name to a player type
             :type powers_controllers: dict
         """
         for power_name, controller in powers_controllers.items():
             self.get_power(power_name).update_controller(controller, timestamps[power_name])
+            self.get_power(power_name).set_player_type(player_types[power_name])
 
     def new_log_data(self, body, recipient="OMNISCIENT"):
         """ Create an undated (without timestamp) log message to be sent from a power to the server.
@@ -1343,6 +1349,22 @@ class Game(Jsonable):
         power.order_is_set = (OrderSettings.ORDER_SET
                               if self.get_orders(power.name)
                               else OrderSettings.ORDER_SET_EMPTY)
+
+    def set_comm_status(self, power_name, comm_status):
+        """Set the comm_status for a player
+            :param power_name: name of power to update comm_status
+            :param comm_status: comm status (enum, strings.[BUSY, READY, INACTIVE])
+        """
+
+        if not self.is_fixed_state_unchanged(log_error=False):
+            return
+        power_name = power_name.upper()
+
+        if not self.has_power(power_name):
+            return
+
+        power = self.get_power(power_name.upper())
+        power.comm_status = comm_status
 
     def set_wait(self, power_name, wait):
         """ Set wait flag for a power.

@@ -37,6 +37,7 @@ export const NOTIFICATIONS = {
         powers_controllers: STRINGS.GAME,
         vote_count_updated: STRINGS.GAME,
         vote_updated: STRINGS.GAME,
+        power_comm_status_update: STRINGS.GAME
     },
     parse: function (jsonObject) {
         if (!jsonObject.hasOwnProperty('name'))

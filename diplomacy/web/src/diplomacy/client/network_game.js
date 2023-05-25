@@ -111,6 +111,10 @@ export class NetworkGame {
         return wait ? this.wait(parameters) : this.noWait(parameters);
     }
 
+    setCommStatus(parameters) {
+        return this._req(Channel.prototype.setCommStatus, parameters)
+    }
+
     vote(parameters) {
         return this._req(Channel.prototype.vote, parameters);
     }

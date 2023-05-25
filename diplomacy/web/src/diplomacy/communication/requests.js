@@ -40,14 +40,14 @@ export const REQUESTS = {
             level: STRINGS.CHANNEL,
             model: {
                 game_id: null, n_controls: null, deadline: 300, registration_password: null,
-                power_name: null, state: null, map_name: 'standard', rules: null
+                power_name: null, state: null, map_name: 'standard', rules: null, player_type: null
             }
         },
         delete_account: {level: STRINGS.CHANNEL, model: {username: null}},
         get_all_possible_orders: {level: STRINGS.GAME, model: {}},
         get_available_maps: {level: STRINGS.CHANNEL, model: {}},
         get_playable_powers: {level: STRINGS.CHANNEL, model: {game_id: null}},
-        join_game: {level: STRINGS.CHANNEL, model: {game_id: null, power_name: null, registration_password: null}},
+        join_game: {level: STRINGS.CHANNEL, model: {game_id: null, power_name: null, registration_password: null, player_type: null}},
         list_games: {
             level: STRINGS.CHANNEL,
             model: {game_id: null, status: null, map_name: null, include_protected: true, for_omniscience: false}
@@ -74,6 +74,7 @@ export const REQUESTS = {
         set_game_status: {level: STRINGS.GAME, model: {status: null}},
         set_orders: {level: STRINGS.GAME, model: {power_name: null, orders: null}},
         set_wait_flag: {level: STRINGS.GAME, model: {power_name: null, wait: null}},
+        set_comm_status: {level: STRINGS.GAME, model: {power_name: null, comm_status: null}},
         synchronize: {level: STRINGS.GAME, phase_dependent: false, model: {timestamp: null}},
         vote: {level: STRINGS.GAME, model: {vote: null}},
         save_game: {level: STRINGS.GAME, model: {}},

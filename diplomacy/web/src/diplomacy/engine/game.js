@@ -400,6 +400,12 @@ export class Game {
         }
     }
 
+    setCommStatus(powerName, commStatus) {
+        if (this.powers.hasOwnProperty(powerName)) {
+            this.powers[powerName].comm_status = commStatus;
+        }
+    }
+
     updateDummyPowers(dummyPowers) {
         for (let dummyPowerName of dummyPowers) if (this.powers.hasOwnProperty(dummyPowerName))
             this.powers[dummyPowerName].setDummy();

@@ -351,7 +351,7 @@ class ServerGame(Game):
             self.remove_omniscient_token(token)
             self.add_observer_token(token)
 
-    def control(self, power_name, username, token):
+    def control(self, power_name, username, token, player_type=None):
         """ Control given power name with given username via given token. """
         if self.observer.has_token(token):
             raise exceptions.ResponseException('Token already registered as observer.')
@@ -360,7 +360,7 @@ class ServerGame(Game):
         power = self.get_power(power_name)  # type: Power
         if power.is_controlled() and not power.is_controlled_by(username):
             raise exceptions.ResponseException('Power already controlled by another user.')
-        power.set_controlled(username)
+        power.set_controlled(username, player_type)
         power.add_token(token)
 
     def remove_observer_token(self, token):

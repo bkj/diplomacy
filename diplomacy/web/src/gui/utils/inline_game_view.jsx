@@ -32,9 +32,12 @@ export class InlineGameView {
     }
 
     joinGame(formData) {
+        //ASSUMPTION: IF YOU JOIN A GAME VIA THE UI YOU ARE A HUMAN
+
         const form = {
             power_name: formData[`power_name_${this.game.game_id}`],
-            registration_password: formData[`registration_password_${this.game.game_id}`]
+            registration_password: formData[`registration_password_${this.game.game_id}`],
+            player_type: 'human'
         };
         if (!form.power_name)
             form.power_name = null;

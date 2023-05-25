@@ -62,7 +62,7 @@ class Power(Jsonable):
     """
     __slots__ = ['game', 'name', 'abbrev', 'adjust', 'centers', 'units', 'influence', 'homes',
                  'retreats', 'goner', 'civil_disorder', 'orders', 'role', 'controller', 'vote',
-                 'order_is_set', 'wait', 'tokens']
+                 'order_is_set', 'wait', 'tokens', 'comm_status','player_type']
     model = {
         strings.ABBREV: parsing.OptionalValueType(str),
         strings.ADJUST: parsing.DefaultValueType(parsing.SequenceType(str), []),
@@ -80,6 +80,8 @@ class Power(Jsonable):
         strings.UNITS: parsing.DefaultValueType(parsing.SequenceType(str), []),
         strings.VOTE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_VOTE_DECISIONS), strings.NEUTRAL),
         strings.WAIT: parsing.DefaultValueType(bool, True),
+        strings.COMM_STATUS: parsing.DefaultValueType(str, strings.BUSY),
+        strings.PLAYER_TYPE: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_PLAYER_TYPES), strings.NONE)
     }
 
     def __init__(self, game=None, name=None, **kwargs):
@@ -98,6 +100,8 @@ class Power(Jsonable):
         self.vote = ''
         self.order_is_set = 0
         self.wait = False
+        self.comm_status = strings.INACTIVE
+        self.player_type = strings.NONE
         self.tokens = set()
         super(Power, self).__init__(name=name, **kwargs)
         assert self.role in strings.ALL_ROLE_TYPES or self.role == self.name
@@ -182,9 +186,11 @@ class Power(Jsonable):
             if self.is_eliminated():
                 self.order_is_set = OrderSettings.ORDER_SET_EMPTY
                 self.wait = False
+                self.comm_status = strings.BUSY
             else:
                 self.order_is_set = OrderSettings.ORDER_NOT_SET
                 self.wait = True if self.is_dummy() else (not self.game.real_time)
+                self.comm_status = strings.BUSY
         self.goner = 0
 
     @staticmethod
@@ -214,6 +220,7 @@ class Power(Jsonable):
         self.game = game
         self.order_is_set = OrderSettings.ORDER_NOT_SET
         self.wait = True if self.is_dummy() else (not self.game.real_time)
+        self.comm_status = strings.BUSY
 
         # Get power abbreviation.
         self.abbrev = self.game.map.abbrev.get(self.name, self.name[0])
@@ -359,23 +366,34 @@ class Power(Jsonable):
         """ (Network Method) Update controller with given username and timestamp. """
         self.controller.put(timestamp, username)
 
-    def set_controlled(self, username):
+    def set_controlled(self, username, player_type=None):
         """ (Network Method) Control power with given username. Username may be None (meaning no controller). """
         if username is None or username == strings.DUMMY:
             if self.controller.last_value() != strings.DUMMY:
                 self.controller.put(common.timestamp_microseconds(), strings.DUMMY)
                 self.tokens.clear()
                 self.wait = True
+                self.comm_status = strings.INACTIVE
                 self.vote = strings.NEUTRAL
+
         elif self.controller.last_value() == strings.DUMMY:
             self.controller.put(common.timestamp_microseconds(), username)
             self.wait = not self.game.real_time
+            if player_type is not None:
+                self.player_type = player_type
         elif self.controller.last_value() != username:
             raise DiplomacyException('Power already controlled by someone else. Kick previous controller before.')
 
     def get_controller(self):
         """ (Network Method) Return current power controller name ('dummy' if power is not controlled). """
         return self.controller.last_value()
+
+    def get_player_type(self):
+        """(Network Method) Return current power player type"""
+        return self.player_type
+
+    def set_player_type(self, player_type):
+        self.player_type = player_type
 
     def get_controller_timestamp(self):
         """ (Network Method) Return timestamp when current controller took control of this power. """

@@ -180,7 +180,9 @@ class Notifier:
         """
         yield self._notify_game(server_game, notifications.PowersControllers,
                                 powers=server_game.get_controllers(),
-                                timestamps=server_game.get_controllers_timestamps())
+                                timestamps=server_game.get_controllers_timestamps(),
+                                player_types=server_game.get_player_types()
+                                )
 
     @gen.coroutine
     def notify_game_status(self, server_game):
@@ -286,6 +288,16 @@ class Notifier:
             :type power: diplomacy.Power
         """
         yield self._notify_game(server_game, notifications.PowerWaitFlag, power_name=power.name, wait=wait_flag)
+
+    @gen.coroutine
+    def notify_power_comm_status(self, server_game, power, comm_status):
+        """ Notify all power token about new comm status for given power.
+            :param server_game: game to notify
+            :param power: power for which comm status updated
+            :param comm_status: new status for given power
+            :type power: diplomacy.Power
+        """
+        yield self._notify_game(server_game, notifications.PowerCommStatusUpdate, power_name=power.name, comm_status=comm_status)
 
     @gen.coroutine
     def notify_cleared_orders(self, server_game, power_name):

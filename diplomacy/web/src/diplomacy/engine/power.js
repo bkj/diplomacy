@@ -34,6 +34,8 @@ export class Power {
         this.retreats = {};
         this.orders = [];
         this.influence = [];
+        this.comm_status = STRINGS.BUSY;
+        this.player_type = null;
     }
 
     isControlled() {
@@ -53,6 +55,10 @@ export class Power {
         return(res);
     }
 
+    getCommStatus() {
+        return(this.comm_status);
+    }
+
     isEliminated() {
         return !(this.units.length || this.centers.length || Object.keys(this.retreats).length);
     }
@@ -68,6 +74,8 @@ export class Power {
         this.units = powerState.units;
         this.retreats = powerState.retreats;
         this.influence = powerState.influence || [];
+        //this.comm_status = powerState.comm_status;
+        //this.player_type = powerState.player_type;
         // Get orders.
         this.orders = [];
         if (this.game.phase.charAt(this.game.phase.length - 1) === 'M') {

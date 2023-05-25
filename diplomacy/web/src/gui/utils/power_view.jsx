@@ -43,11 +43,19 @@ function getWaitFlag(power) {
     return <span className={power.wait ? 'wait' : 'no-wait'}>{power.wait ? 'yes' : 'no'}</span>;
 }
 
+function getCommStatusFlag(power) {
+    if (power.isEliminated())
+        return <span className="dummy"><em>N/A</em></span>;
+    return <span className={power.comm_status === STRINGS.BUSY ? 'busy' : 'ready'}>{power.comm_status === STRINGS.BUSY ? 'busy' : 'ready'}</span>;
+
+}
+
 const GETTERS = {
     name: getName,
     controller: getController,
     order_is_set: getOrderFlag,
-    wait: getWaitFlag
+    wait: getWaitFlag,
+    comm_status: getCommStatusFlag,
 };
 
 export class PowerView {

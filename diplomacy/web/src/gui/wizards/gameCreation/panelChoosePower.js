@@ -35,7 +35,7 @@ export class PanelChoosePower extends React.Component {
                     <div className="col-sm">
                         <button type="button" className="btn btn-secondary btn-sm btn-block inline" onClick={() => {
                             const powerName = this.props.powers[Math.floor(Math.random() * this.props.powers.length)];
-                            this.props.onUpdateParams({power_name: powerName});
+                            this.props.onUpdateParams({power_name: powerName, player_type: 'human'});
                             this.props.forward();
                         }}>Choose randomly for me
                         </button>
@@ -51,7 +51,7 @@ export class PanelChoosePower extends React.Component {
                                         <button key={i} type="button"
                                                 className={`btn btn-secondary btn-sm flex-grow-1 ${i === 0 ? '' : 'ml-sm-1'}`}
                                                 onClick={() => {
-                                                    this.props.onUpdateParams({power_name: this.props.powers[i]});
+                                                    this.props.onUpdateParams({power_name: this.props.powers[i], player_type: 'human'});
                                                     this.props.forward();
                                                 }}>
                                             {this.props.powers[i]}
